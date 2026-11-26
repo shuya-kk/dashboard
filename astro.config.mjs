@@ -3,17 +3,41 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 
 /**
- * GitHub Pages 上の公開URL（ルートドメインまたは /dashboard 等のサブパス）に
- * 環境変数 PUBLIC_BASE_PATH / PUBLIC_SITE_URL で柔軟に対応し、
- * 完全な静的ビルド（output: 'static'）を生成します。
+ * PUBLIC_BASE_PATH に誤ってフルURL (https://shuya-kk.github.io/dashboard 等) が設定された場合でも、
+ * 安全にパス部分 (/dashboard) だけを抽出して正規化するヘルパー関数
  */
+function normalizeBasePath(rawBase) {
+  const val = String(rawBase || '/').trim();
+  if (!val || val === '/') return '/';
+  if (/^https?:\/\//i.test(val)) {
+    try {
+      const parsed = new URL(val);
+      return parsed.pathname || '/';
+    } catch {
+      // ignore
+    }
+  }
+  return val.startsWith('/') ? val : `/${val}`;
+}
+
+function normalizeSiteUrl(rawSite) {
+  const val = String(rawSite || 'https://shuya-kk.github.io').trim();
+  try {
+    const parsed = new URL(val);
+    return parsed.origin;
+  } catch {
+    return 'https://shuya-kk.github.io';
+  }
+}
+
 export default defineConfig({
   output: 'static',
-  site: process.env.PUBLIC_SITE_URL || 'https://example.github.io',
-  base: process.env.PUBLIC_BASE_PATH || '/',
+  site: normalizeSiteUrl(process.env.PUBLIC_SITE_URL),
+  base: normalizeBasePath(process.env.PUBLIC_BASE_PATH || '/dashboard'),
   trailingSlash: 'ignore',
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()]
   }
 });
+
