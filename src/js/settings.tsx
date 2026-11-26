@@ -40,10 +40,10 @@ import type {
 
 const DEFAULT_YAML_TEMPLATE = `---
 title: "{title}"
-date: "{date}"
-description: ""
-draft: false
-tags: []
+pubDate: {pubDate}
+description: "{title}"
+tags: [""]
+visibility: "public"
 ---
 
 ここに記事本文を入力してください。
@@ -287,11 +287,10 @@ export const SettingsSection: React.FC = () => {
                     <tr key={item.id} className="hover:bg-slate-50">
                       <td className="py-2.5 px-4">
                         <span
-                          className={`inline-block px-2 py-0.5 text-xs font-medium rounded border ${
-                            item.isActive
+                          className={`inline-block px-2 py-0.5 text-xs font-medium rounded border ${item.isActive
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : 'bg-slate-100 text-slate-600 border-slate-300'
-                          }`}
+                            }`}
                         >
                           {item.isActive ? '有効' : '無効'}
                         </span>

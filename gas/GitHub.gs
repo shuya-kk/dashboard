@@ -298,3 +298,100 @@ function fetchLatestCommitForPath_(repoConfig, filePath) {
   }
   return null;
 }
+
+/**
+ * GitHub Git Data API (Refs / Commits / Trees) を使用して複数ファイルの作成・更新・リネーム（旧パス削除）を
+ * 単一のコミットとして一括保存する関数
+ * @param {Object} repoConfig リポジトリ設定
+ * @param {Array<{path: string, content: string, previousPath?: string}>} fileEntries 保存するファイル配列
+ * @param {string} commitMessage コミットメッセージ
+ */
+function commitMultipleFilesAtomic_(repoConfig, fileEntries, commitMessage) {
+  var owner = encodeURIComponent(repoConfig.owner);
+  var repo = encodeURIComponent(repoConfig.repo);
+  var branch = String(repoConfig.branch || 'main').trim();
+  var tokenKey = repoConfig.tokenPropertyKey;
+
+  // 1. 現在のブランチHEADのRefを取得
+  var refData = githubRequest_(
+    tokenKey,
+    'GET',
+    '/repos/' + owner + '/' + repo + '/git/ref/heads/' + encodeURIComponent(branch),
+    null
+  );
+  var latestCommitSha = refData && refData.object && refData.object.sha;
+  if (!latestCommitSha) {
+    throw createAppError_('GITHUB_API_ERROR', 'ブランチ ' + branch + ' の最新コミットSHAを取得できませんでした。', false);
+  }
+
+  // 2. 現在のHEADコミットから base_tree SHA を取得
+  var commitData = githubRequest_(
+    tokenKey,
+    'GET',
+    '/repos/' + owner + '/' + repo + '/git/commits/' + latestCommitSha,
+    null
+  );
+  var baseTreeSha = commitData && commitData.tree && commitData.tree.sha;
+  if (!baseTreeSha) {
+    throw createAppError_('GITHUB_API_ERROR', 'ベースツリーのSHAを取得できませんでした。', false);
+  }
+
+  // 3. 新しいツリーエントリを構築（ファイル名変更時は旧パスに sha: null を指定して削除）
+  var treeNodes = [];
+  for (var i = 0; i < fileEntries.length; i++) {
+    var entry = fileEntries[i];
+    if (entry.previousPath && entry.previousPath !== entry.path) {
+      treeNodes.push({
+        path: entry.previousPath,
+        mode: '100644',
+        type: 'blob',
+        sha: null
+      });
+    }
+    treeNodes.push({
+      path: entry.path,
+      mode: '100644',
+      type: 'blob',
+      content: entry.content
+    });
+  }
+
+  // 4. 新しい Git Tree を作成
+  var newTree = githubRequest_(
+    tokenKey,
+    'POST',
+    '/repos/' + owner + '/' + repo + '/git/trees',
+    {
+      base_tree: baseTreeSha,
+      tree: treeNodes
+    }
+  );
+
+  // 5. 新しい Git Commit を作成
+  var newCommit = githubRequest_(
+    tokenKey,
+    'POST',
+    '/repos/' + owner + '/' + repo + '/git/commits',
+    {
+      message: commitMessage,
+      tree: newTree.sha,
+      parents: [latestCommitSha]
+    }
+  );
+
+  // 6. ブランチの Ref を新しいコミットへ更新
+  githubRequest_(
+    tokenKey,
+    'PATCH',
+    '/repos/' + owner + '/' + repo + '/git/refs/heads/' + encodeURIComponent(branch),
+    {
+      sha: newCommit.sha,
+      force: false
+    }
+  );
+
+  return {
+    commitSha: newCommit.sha,
+    treeSha: newTree.sha
+  };
+}

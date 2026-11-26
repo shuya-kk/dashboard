@@ -185,7 +185,7 @@ export function updateFrontmatterField(
   const fence = format === 'toml' ? '+++' : '---';
 
   const lines = parsed.frontmatterRaw ? parsed.frontmatterRaw.split(/\r?\n/) : [];
-  const escapedValue = formatFrontmatterScalar(newValue, format);
+  const escapedValue = formatFrontmatterScalar(newValue, format, key);
   let replaced = false;
 
   const updatedLines = lines.map((line) => {
@@ -205,15 +205,22 @@ export function updateFrontmatterField(
   return `${fence}\n${cleanFrontmatter}\n${fence}\n\n${parsed.body.replace(/^\r?\n/, '')}`;
 }
 
-function formatFrontmatterScalar(val: string, format: FrontmatterFormat): string {
+function formatFrontmatterScalar(val: string, format: FrontmatterFormat, key?: string): string {
   const trimmed = val.trim();
   if (trimmed === 'true' || trimmed === 'false') return trimmed;
   if (/^-?\d+(\.\d+)?$/.test(trimmed)) return trimmed;
   if (trimmed.startsWith('[') && trimmed.endsWith(']')) return trimmed;
+  // ISO 8601 日付 (例: 2026-04-18T00:00:00Z) は pubDate 等でクォートなしのまま出力可能にする
+  if ((key === 'pubDate' || key === 'updatedDate') && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(trimmed) && format === 'yaml') {
+    return trimmed;
+  }
   if (format === 'toml') {
     return `"${trimmed.replace(/"/g, '\\"')}"`;
   }
-  if (/[:#{}[\],&*?|<>=!%@`]/.test(trimmed) || trimmed === '') {
+  if (key === 'title' || key === 'description' || key === 'visibility') {
+    return `"${trimmed.replace(/"/g, '\\"')}"`;
+  }
+  if (/[:#{}[\],&*?|<>=!%@`\s]/.test(trimmed) || trimmed === '') {
     return `"${trimmed.replace(/"/g, '\\"')}"`;
   }
   return trimmed;
@@ -224,7 +231,76 @@ function escapeRegExp(str: string): string {
 }
 
 /**
- * 新規記事の初期Markdownを生成
+ * カンマ区切りまたはJSON配列文字列を YAML配列形式 ["tag1", "tag2"] に変換するヘルパー
+ */
+export function formatTagsArrayString(rawInput: string): string {
+  const trimmed = rawInput.trim();
+  if (!trimmed || trimmed === '[]') return '[]';
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(trimmed) as unknown[];
+      if (Array.isArray(parsed)) {
+        const items = parsed
+          .map((item) => String(item).trim())
+          .filter(Boolean)
+          .map((s) => `"${s.replace(/"/g, '\\"')}"`);
+        return `[${items.join(', ')}]`;
+      }
+    } catch {
+      return trimmed;
+    }
+  }
+  const items = trimmed
+    .split(',')
+    .map((s) => s.trim().replace(/^["']|["']$/g, ''))
+    .filter(Boolean)
+    .map((s) => `"${s.replace(/"/g, '\\"')}"`);
+  return `[${items.join(', ')}]`;
+}
+
+/**
+ * YAML配列文字列 ["Cyano", "サポート"] をカンマ区切り文字列 "Cyano, サポート" に変換（フォーム表示用）
+ */
+export function parseTagsArrayToCommaString(rawVal: string | undefined): string {
+  const trimmed = (rawVal || '').trim();
+  if (!trimmed || trimmed === '[]') return '';
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(trimmed) as unknown[];
+      if (Array.isArray(parsed)) {
+        return parsed.map((v) => String(v)).join(', ');
+      }
+    } catch {
+      return trimmed
+        .slice(1, -1)
+        .split(',')
+        .map((s) => s.trim().replace(/^["']|["']$/g, ''))
+        .filter(Boolean)
+        .join(', ');
+    }
+  }
+  return trimmed;
+}
+
+/**
+ * pubDate / date の値から <input type="date"> 用の YYYY-MM-DD を抽出する
+ */
+export function extractDateOnlyForInput(rawDate: string | undefined): string {
+  const trimmed = (rawDate || '').trim();
+  const match = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (match && match[1]) return match[1];
+  return '';
+}
+
+/**
+ * 新規記事の初期Markdownを生成（ユーザー指定サンプル形式準拠）
+ * ---
+ * title: "Cyano – サポート"
+ * pubDate: 2026-04-18T00:00:00Z
+ * description: "Cyano サポート"
+ * tags: ["Cyano", "サポート"]
+ * visibility: "public"
+ * ---
  */
 export function buildInitialArticleMarkdown(options: {
   title: string;
@@ -233,9 +309,11 @@ export function buildInitialArticleMarkdown(options: {
   defaultTemplate?: string;
 }): string {
   const today = new Date().toISOString().slice(0, 10);
+  const pubDateIso = `${today}T00:00:00Z`;
   if (options.defaultTemplate && options.defaultTemplate.trim().length > 0) {
     return options.defaultTemplate
       .replace(/\{title\}/g, options.title || '新規記事タイトル')
+      .replace(/\{pubDate\}/g, pubDateIso)
       .replace(/\{date\}/g, today)
       .replace(/\{slug\}/g, options.slug || 'new-post');
   }
@@ -244,10 +322,10 @@ export function buildInitialArticleMarkdown(options: {
     return [
       '+++',
       `title = "${(options.title || '新規記事タイトル').replace(/"/g, '\\"')}"`,
-      `date = "${today}"`,
-      'description = ""',
-      'draft = false',
+      `pubDate = "${pubDateIso}"`,
+      `description = "${(options.title || '').replace(/"/g, '\\"')}"`,
       'tags = []',
+      'visibility = "public"',
       '+++',
       '',
       'ここに記事本文を入力してください。',
@@ -262,10 +340,10 @@ export function buildInitialArticleMarkdown(options: {
   return [
     '---',
     `title: "${(options.title || '新規記事タイトル').replace(/"/g, '\\"')}"`,
-    `date: "${today}"`,
-    'description: ""',
-    'draft: false',
+    `pubDate: ${pubDateIso}`,
+    `description: "${(options.title || '').replace(/"/g, '\\"')}"`,
     'tags: []',
+    'visibility: "public"',
     '---',
     '',
     'ここに記事本文を入力してください。',

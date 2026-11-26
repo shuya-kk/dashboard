@@ -23,7 +23,8 @@ import {
   RefreshCw,
   AlertTriangle,
   X,
-  Sliders
+  Sliders,
+  Menu
 } from 'lucide-react';
 import { useAppStore } from './store';
 import {
@@ -94,6 +95,7 @@ const AdminShell: React.FC = () => {
 
   const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
   const [isReauthenticating, setIsReauthenticating] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // アクセストークンの残り有効期限を定期監視（15秒ごと）
   useEffect(() => {
@@ -174,19 +176,37 @@ const AdminShell: React.FC = () => {
 
   return (
     <div className="admin-shell">
-      {/* サイドバーナビゲーション */}
-      <aside className="admin-sidebar">
-        <div className="p-4 border-b border-slate-800">
-          <div className="flex items-center gap-2 text-sm font-bold text-white">
-            <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0" />
-            <span>個人開発 統合管理</span>
+      {/* スマホ用ドロワー背景オーバーレイ */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/50 z-30 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* サイドバーナビゲーション（PCでは常時表示、スマホではスライドドロワー） */}
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-bold text-white">
+              <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>個人開発 統合管理</span>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-0.5 font-mono truncate">
+              GitHub Pages + GAS + Sheets
+            </div>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-mono truncate">
-            GitHub Pages + GAS + Sheets
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden p-1 text-slate-400 hover:text-white"
+            aria-label="メニューを閉じる"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <nav className="flex-1 p-2.5 space-y-1">
+        <nav className="flex-1 p-2.5 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = activeSection === item.id;
@@ -194,7 +214,10 @@ const AdminShell: React.FC = () => {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => {
+                  setActiveSection(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded text-left transition-colors ${
                   active
                     ? 'bg-blue-600 text-white font-semibold'
@@ -234,16 +257,24 @@ const AdminShell: React.FC = () => {
       {/* メイン領域 */}
       <div className="admin-main">
         <header className="admin-header">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold text-slate-900">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-1.5 -ml-1 text-slate-700 hover:bg-slate-100 rounded border border-slate-200 shrink-0"
+              aria-label="メニューを開く"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <h1 className="text-sm sm:text-base font-bold text-slate-900 truncate">
               {NAV_ITEMS.find((n) => n.id === activeSection)?.label}
             </h1>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-slate-500 hidden sm:inline truncate">
               — {NAV_ITEMS.find((n) => n.id === activeSection)?.subLabel}
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-2 text-xs shrink-0">
             <button
               type="button"
               disabled={isReauthenticating}
@@ -259,7 +290,7 @@ const AdminShell: React.FC = () => {
 
         {/* アクセストークン期限切れ・再認証バナー */}
         {tokenExpiredMessage && (
-          <div className="bg-amber-50 border-b border-amber-300 px-5 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-amber-50 border-b border-amber-300 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-amber-900 font-medium">
               <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
               <span>{tokenExpiredMessage}</span>
@@ -284,6 +315,27 @@ const AdminShell: React.FC = () => {
           {activeSection === 'applications' && <ApplicationsSection />}
           {activeSection === 'settings' && <SettingsSection />}
         </main>
+
+        {/* スマホ用下部固定ボトムナビゲーション（片手で6セクションを即座に切り替え可能） */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-200 grid grid-cols-6 py-1 px-1 shadow-md">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveSection(item.id)}
+                className={`flex flex-col items-center justify-center py-1 rounded text-[10px] ${
+                  active ? 'text-blue-600 font-bold' : 'text-slate-500'
+                }`}
+              >
+                <Icon className="w-4 h-4 mb-0.5" />
+                <span className="truncate max-w-full px-0.5">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />

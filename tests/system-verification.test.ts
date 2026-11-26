@@ -217,11 +217,12 @@ describe('4. セキュリティ・XSS対策検証', () => {
 
   it('新規記事テンプレートから正しいFrontmatter付きMarkdownを生成できる', () => {
     const md = buildInitialArticleMarkdown({
-      title: 'テスト記事',
-      slug: 'test-post',
+      title: 'Cyano – サポート',
+      slug: 'cyano-support',
       format: 'yaml'
     });
-    expect(md).toContain('title: "テスト記事"');
-    expect(md).toContain('draft: false');
+    expect(md).toContain('title: "Cyano – サポート"');
+    expect(md).toContain('pubDate:');
+    expect(md).toContain('visibility: "public"');
   });
 });

@@ -39,7 +39,10 @@ import {
 import {
   renderSanitizedMarkdown,
   splitFrontmatterAndBody,
-  updateFrontmatterField
+  updateFrontmatterField,
+  extractDateOnlyForInput,
+  formatTagsArrayString,
+  parseTagsArrayToCommaString
 } from './utils';
 import type { FrontmatterFormat, RepositoryConfig } from '../types/domain';
 
@@ -211,7 +214,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     }
   };
 
-  const standardFmKeys = ['title', 'date', 'description', 'draft', 'tags', 'slug'];
+  const standardFmKeys = ['title', 'pubDate', 'description', 'tags', 'visibility'];
   const allFmKeys = Array.from(new Set([...standardFmKeys, ...Object.keys(parsedDoc.fields)]));
 
   return (
@@ -219,12 +222,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       {/* Frontmatter クイック編集パネル（あらゆるFrontmatter構造と双方向同期） */}
       {repository.frontmatterFormat !== 'none' && (
         <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-200">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Frontmatter メタデータ編集（形式: {repository.frontmatterFormat.toUpperCase()}）</span>
-              <span className="text-slate-500 font-normal">
-                ※下のエディタ内のFrontmatterブロックとリアルタイムに双方向同期します
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700">
+              <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
+              <span>Frontmatter メタデータ編集（{repository.frontmatterFormat.toUpperCase()}）</span>
+              <span className="text-slate-500 font-normal hidden sm:inline">
+                ※エディタ内のFrontmatterとリアルタイム双方向同期します
               </span>
             </div>
             <button
@@ -238,13 +241,30 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
           {showFrontmatterPanel && (
             <div className="p-3 space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {allFmKeys.map((key) => {
                   const currentVal = parsedDoc.fields[key] ?? '';
+                  const isDateField =
+                    key === 'pubDate' ||
+                    key === 'date' ||
+                    key === 'updatedDate' ||
+                    key === 'publishedAt';
+
                   return (
                     <div key={key} className="flex flex-col">
                       <label className="text-xs font-medium text-slate-600 mb-1 font-mono">{key}</label>
-                      {key === 'draft' ? (
+                      {key === 'visibility' ? (
+                        <select
+                          value={currentVal || 'public'}
+                          onChange={(e) => handleFrontmatterFieldChange('visibility', e.target.value)}
+                          className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-900"
+                        >
+                          <option value="public">public（公開）</option>
+                          <option value="private">private（非公開）</option>
+                          <option value="unlisted">unlisted（限定公開）</option>
+                          <option value="draft">draft（下書き）</option>
+                        </select>
+                      ) : key === 'draft' ? (
                         <select
                           value={currentVal === 'true' ? 'true' : 'false'}
                           onChange={(e) => handleFrontmatterFieldChange('draft', e.target.value)}
@@ -253,11 +273,52 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                           <option value="false">false（公開）</option>
                           <option value="true">true（下書き）</option>
                         </select>
+                      ) : isDateField ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="date"
+                            value={extractDateOnlyForInput(currentVal)}
+                            onChange={(e) => {
+                              const picked = e.target.value;
+                              if (!picked) {
+                                handleFrontmatterFieldChange(key, '');
+                                return;
+                              }
+                              // pubDate は YYYY-MM-DDT00:00:00Z 形式で反映
+                              const nextIso =
+                                key === 'pubDate' || currentVal.includes('T')
+                                  ? `${picked}T00:00:00Z`
+                                  : picked;
+                              handleFrontmatterFieldChange(key, nextIso);
+                            }}
+                            className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-900 font-mono flex-1 min-w-0"
+                            title="カレンダーから日付を選択"
+                          />
+                          <input
+                            type="text"
+                            value={currentVal}
+                            onChange={(e) => handleFrontmatterFieldChange(key, e.target.value)}
+                            placeholder="2026-04-18T00:00:00Z"
+                            className="px-2 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-700 font-mono w-40 hidden xl:block"
+                            title="ISO 8601 直接編集"
+                          />
+                        </div>
+                      ) : key === 'tags' ? (
+                        <input
+                          type="text"
+                          value={parseTagsArrayToCommaString(currentVal)}
+                          placeholder="Cyano, サポート (カンマ区切り)"
+                          onChange={(e) => {
+                            const formattedArr = formatTagsArrayString(e.target.value);
+                            handleFrontmatterFieldChange('tags', formattedArr);
+                          }}
+                          className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:border-slate-600"
+                        />
                       ) : (
                         <input
-                          type={key === 'date' ? 'text' : 'text'}
+                          type="text"
                           value={currentVal}
-                          placeholder={key === 'date' ? 'YYYY-MM-DD' : `${key} の値`}
+                          placeholder={`${key} の値`}
                           onChange={(e) => handleFrontmatterFieldChange(key, e.target.value)}
                           className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:border-slate-600"
                         />
@@ -282,7 +343,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                   value={newFmVal}
                   onChange={(e) => setNewFmVal(e.target.value)}
                   placeholder="値 (例: tech)"
-                  className="px-2 py-1 text-xs border border-slate-300 rounded bg-white w-48"
+                  className="px-2 py-1 text-xs border border-slate-300 rounded bg-white w-44"
                 />
                 <button
                   type="submit"

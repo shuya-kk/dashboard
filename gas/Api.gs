@@ -93,6 +93,8 @@ function routeAdminAction_(action, params, actorEmail) {
       return createArticle_(params, actorEmail);
     case 'articles.update':
       return updateArticle_(params, actorEmail);
+    case 'articles.batchSave':
+      return batchSaveArticles_(params, actorEmail);
     case 'articles.delete':
       return deleteArticle_(params, actorEmail);
     case 'articles.uploadImage':

@@ -328,11 +328,12 @@ function createArticle_(params, actorEmail) {
 
 /**
  * 既存記事を更新（最新SHA確認・競合時は無条件上書きせずリモート最新版を返して差分提示）
+ * ※ファイル名（パス）が変更された場合は新パスに作成し、旧パスを削除（リネーム対応）します。
  */
 function updateArticle_(params, actorEmail) {
   var p = params || {};
   var repoId = validateString_(p.repositoryId, 'リポジトリID', { required: true });
-  var targetPath = validateString_(p.path, 'ファイルパス', { required: true });
+  var originalPath = validateString_(p.path, '元のファイルパス', { required: true });
   var expectedSha = validateString_(p.sha, '対象ファイルのSHA', { required: true });
   var content = validateString_(p.content, '記事本文', {
     required: true,
@@ -340,14 +341,21 @@ function updateArticle_(params, actorEmail) {
     trim: false
   });
   var repoConfig = getRepositoryByIdOrThrow_(repoId);
+
+  // 新しいファイル名またはパスが指定されている場合は正規化（未指定なら元のパスを維持）
+  var targetPath = p.newFilename
+    ? buildAndValidateArticlePath_(repoConfig, p.newFilename)
+    : originalPath;
+  var isRenamed = targetPath !== originalPath;
+
   var commitMessage = validateString_(
-    p.commitMessage || ('docs: update article ' + targetPath),
+    p.commitMessage || (isRenamed ? ('docs: rename and update ' + originalPath + ' to ' + targetPath) : ('docs: update article ' + targetPath)),
     'コミットメッセージ',
     { required: true, maxLength: 200 }
   );
 
-  // 1. まずGitHub上の最新ファイル状態を取得してSHA競合を事前確認
-  var latestRemote = fetchGitHubFileContent_(repoConfig, targetPath);
+  // 1. まずGitHub上の元ファイルの最新状態を取得してSHA競合を事前確認
+  var latestRemote = fetchGitHubFileContent_(repoConfig, originalPath);
   if (latestRemote.sha !== expectedSha) {
     throw createAppError_(
       'GITHUB_SHA_CONFLICT',
@@ -355,7 +363,7 @@ function updateArticle_(params, actorEmail) {
       false,
       {
         conflict: true,
-        path: targetPath,
+        path: originalPath,
         expectedSha: expectedSha,
         remoteSha: latestRemote.sha,
         remoteContent: latestRemote.content
@@ -363,20 +371,42 @@ function updateArticle_(params, actorEmail) {
     );
   }
 
-  // 2. SHAを指定して更新（万一直後に競合した場合もキャッチして最新版を返す）
+  // リネーム先パスに既に別ファイルが存在しないか確認
+  if (isRenamed) {
+    var existingNewTarget = null;
+    try {
+      existingNewTarget = fetchGitHubFileContent_(repoConfig, targetPath);
+    } catch (err) {
+      if (err.code !== 'GITHUB_NOT_FOUND') throw err;
+    }
+    if (existingNewTarget) {
+      throw createAppError_(
+        'ARTICLE_ALREADY_EXISTS',
+        '変更後のファイル名（' + targetPath + '）は既に存在します。別のファイル名を指定してください。',
+        false
+      );
+    }
+  }
+
+  // 2. 更新実行（リネームを伴う場合は新パスに作成してから旧パスを削除、同一パスならSHA指定で更新）
   var putResult;
   try {
-    putResult = putGitHubTextFile_(repoConfig, targetPath, content, commitMessage, expectedSha);
+    if (isRenamed) {
+      putResult = putGitHubTextFile_(repoConfig, targetPath, content, commitMessage, null);
+      deleteGitHubFile_(repoConfig, originalPath, expectedSha, 'docs: remove old file ' + originalPath + ' after rename');
+    } else {
+      putResult = putGitHubTextFile_(repoConfig, targetPath, content, commitMessage, expectedSha);
+    }
   } catch (err) {
     if (err.code === 'GITHUB_SHA_CONFLICT') {
-      var conflictRemote = fetchGitHubFileContent_(repoConfig, targetPath);
+      var conflictRemote = fetchGitHubFileContent_(repoConfig, originalPath);
       throw createAppError_(
         'GITHUB_SHA_CONFLICT',
         '保存時にSHA競合が検出されました。リモート最新版との差分を確認してください。',
         false,
         {
           conflict: true,
-          path: targetPath,
+          path: originalPath,
           expectedSha: expectedSha,
           remoteSha: conflictRemote.sha,
           remoteContent: conflictRemote.content
@@ -393,10 +423,12 @@ function updateArticle_(params, actorEmail) {
 
   recordOperationLog_(
     actorEmail,
-    'ARTICLE_UPDATE',
+    isRenamed ? 'ARTICLE_RENAME_UPDATE' : 'ARTICLE_UPDATE',
     'Article',
     repoConfig.owner + '/' + repoConfig.repo + ':' + targetPath,
-    '記事「' + targetPath + '」を更新しました。',
+    isRenamed
+      ? ('記事「' + originalPath + '」を「' + targetPath + '」にリネームして更新しました。')
+      : ('記事「' + targetPath + '」を更新しました。'),
     'SUCCESS'
   );
 
@@ -407,6 +439,92 @@ function updateArticle_(params, actorEmail) {
     githubUrl: (putResult && putResult.content && putResult.content.html_url) || urls.githubUrl,
     publicUrl: urls.publicUrl,
     commitSha: (putResult && putResult.commit && putResult.commit.sha) || ''
+  };
+}
+
+/**
+ * 複数記事ファイル（新規作成・既存編集・リネーム・ローカルMarkdown一括取り込み）を一括保存する
+ */
+function batchSaveArticles_(params, actorEmail) {
+  var p = params || {};
+  var repoId = validateString_(p.repositoryId, 'リポジトリID', { required: true });
+  var repoConfig = getRepositoryByIdOrThrow_(repoId);
+  var rawFiles = p.files;
+
+  if (!Array.isArray(rawFiles) || rawFiles.length === 0) {
+    throw createAppError_('VALIDATION_ERROR', '一括保存するファイルが指定されていません。', false);
+  }
+  if (rawFiles.length > 30) {
+    throw createAppError_('VALIDATION_ERROR', '一度に一括保存できるファイル数は最大30件までです。', false);
+  }
+
+  var commitMessage = validateString_(
+    p.commitMessage || ('docs: batch save ' + rawFiles.length + ' articles'),
+    'コミットメッセージ',
+    { required: true, maxLength: 200 }
+  );
+
+  var preparedEntries = [];
+  for (var i = 0; i < rawFiles.length; i++) {
+    var item = rawFiles[i] || {};
+    var targetPath = buildAndValidateArticlePath_(repoConfig, item.filename || item.path);
+    var content = validateString_(item.content, '記事本文 (' + targetPath + ')', {
+      required: true,
+      maxLength: 500000,
+      trim: false
+    });
+    var originalPath = item.originalPath ? String(item.originalPath).trim() : '';
+    var expectedSha = item.sha ? String(item.sha).trim() : '';
+
+    // 既存ファイルの編集時はリモートSHAが競合していないかチェック
+    if (originalPath && expectedSha) {
+      var latestRemote = fetchGitHubFileContent_(repoConfig, originalPath);
+      if (latestRemote.sha !== expectedSha) {
+        throw createAppError_(
+          'GITHUB_SHA_CONFLICT',
+          'ファイル「' + originalPath + '」がリモートで更新されているためSHA競合が発生しました。',
+          false,
+          {
+            conflict: true,
+            path: originalPath,
+            expectedSha: expectedSha,
+            remoteSha: latestRemote.sha,
+            remoteContent: latestRemote.content
+          }
+        );
+      }
+    }
+
+    preparedEntries.push({
+      path: targetPath,
+      previousPath: originalPath && originalPath !== targetPath ? originalPath : '',
+      content: content
+    });
+  }
+
+  // Git Data API で全ファイルを1コミットにまとめてアトミックに保存
+  var batchRes = commitMultipleFilesAtomic_(repoConfig, preparedEntries, commitMessage);
+  invalidateArticleListCache_(repoId);
+
+  var savedPaths = [];
+  for (var j = 0; j < preparedEntries.length; j++) {
+    savedPaths.push(preparedEntries[j].path);
+  }
+
+  recordOperationLog_(
+    actorEmail,
+    'ARTICLE_BATCH_SAVE',
+    'Article',
+    repoConfig.owner + '/' + repoConfig.repo,
+    rawFiles.length + ' 件の記事ファイル（' + savedPaths.join(', ') + '）を一括保存しました。',
+    'SUCCESS'
+  );
+
+  return {
+    repositoryId: repoConfig.id,
+    savedCount: preparedEntries.length,
+    savedPaths: savedPaths,
+    commitSha: batchRes.commitSha
   };
 }
 

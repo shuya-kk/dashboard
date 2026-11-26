@@ -1,12 +1,14 @@
 /*
  * src/css/layout.css
- * PC/Macでの操作性を最優先しつつ、タブレット・スマートフォンにもレスポンシブ対応するレイアウト定義。
+ * PC/Macでの操作性と、スマートフォン・タブレットでの快適なレスポンシブ操作を両立するレイアウト定義。
+ * スマホ（768px以下）ではサイドバーが画面上部を占領しないよう、スライド式のドロワーメニュー＋下部クイックナビバーを採用します。
  */
 
 .admin-shell {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  position: relative;
 }
 
 .admin-sidebar {
@@ -17,6 +19,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid #1e293b;
+  z-index: 40;
 }
 
 .admin-main {
@@ -28,13 +31,13 @@
 }
 
 .admin-header {
-  height: 56px;
+  min-height: 54px;
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 8px 20px;
   position: sticky;
   top: 0;
   z-index: 20;
@@ -48,32 +51,48 @@
   margin: 0 auto;
 }
 
-/* 記事エディタの2カラム分割レイアウト（PCでは左右並列、タブレット以下では上下またはタブ切り替え） */
+/* 記事エディタの2カラム分割レイアウト（PCでは左右並列、タブレット・スマホでは縦並び） */
 .editor-split-pane {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
-  min-height: 640px;
+  min-height: 600px;
 }
 
 @media (max-width: 1024px) {
   .editor-split-pane {
     grid-template-columns: 1fr;
+    min-height: auto;
   }
 }
 
+/* スマートフォン・小型タブレット（768px以下）向けドロワーレイアウト */
 @media (max-width: 768px) {
-  .admin-shell {
-    flex-direction: column;
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    max-width: 82vw;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
   }
 
-  .admin-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #1e293b;
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .admin-header {
+    padding: 8px 12px;
   }
 
   .admin-content {
-    padding: 14px;
+    padding: 12px 10px 76px;
+  }
+
+  /* スマホ時はCodeMirrorの高さをコンパクトにしてスクロールしやすくする */
+  .cm-editor-container .cm-editor {
+    min-height: 360px;
   }
 }
