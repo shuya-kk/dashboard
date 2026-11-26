@@ -10,6 +10,48 @@ import type { FrontmatterFormat, PublicConnectionConfig } from '../types/domain'
 
 const CONNECTION_CONFIG_STORAGE_KEY = 'pda_public_connection_config_v1';
 const ARTICLE_DRAFT_PREFIX = 'pda_article_draft_v1_';
+const ADMIN_HINT_STORAGE_KEY = 'pda_admin_hint_v1';
+
+export interface SavedAdminHint {
+  email: string;
+  name: string;
+  picture: string;
+}
+
+export function getSavedAdminHint(): SavedAdminHint | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(ADMIN_HINT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<SavedAdminHint>;
+    if (!parsed.email) return null;
+    return {
+      email: String(parsed.email),
+      name: String(parsed.name || parsed.email),
+      picture: String(parsed.picture || '')
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveAdminHint(hint: SavedAdminHint): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(ADMIN_HINT_STORAGE_KEY, JSON.stringify(hint));
+  } catch {
+    // ignore
+  }
+}
+
+export function clearSavedAdminHint(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(ADMIN_HINT_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
 
 /**
  * ISO 8601 文字列を日本時間（JST: Asia/Tokyo）の読みやすい形式に変換

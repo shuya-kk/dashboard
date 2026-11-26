@@ -35,7 +35,10 @@ import {
 import { callAdminApi } from './api';
 import {
   getPublicConnectionConfig,
-  savePublicConnectionConfig
+  savePublicConnectionConfig,
+  getSavedAdminHint,
+  saveAdminHint,
+  clearSavedAdminHint
 } from './utils';
 import { publicConnectionConfigSchema } from '../schemas/validation';
 import { DashboardSection } from './dashboard';
@@ -108,6 +111,7 @@ const AdminShell: React.FC = () => {
   // ログアウト処理
   const handleLogout = async () => {
     const currentToken = authUser?.accessToken;
+    clearSavedAdminHint();
     clearAuth();
     queryClient.clear();
     await revokeGoogleTokens(currentToken);
@@ -150,6 +154,11 @@ const AdminShell: React.FC = () => {
           authError={authError}
           setAuthError={setAuthError}
           onAuthenticated={(user) => {
+            saveAdminHint({
+              email: user.email,
+              name: user.name,
+              picture: user.picture
+            });
             setAuthUser(user);
             pushToast({
               type: 'success',
@@ -310,6 +319,7 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
 }) => {
   const googleButtonContainerRef = useRef<HTMLDivElement | null>(null);
   const [connConfig, setConnConfig] = useState(() => getPublicConnectionConfig());
+  const [savedHint, setSavedHint] = useState(() => getSavedAdminHint());
   const [showConfigEditor, setShowConfigEditor] = useState<boolean>(
     () => !connConfig.googleClientId || !connConfig.gasDeploymentId
   );
@@ -324,7 +334,48 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
 
   const isConfigured = Boolean(connConfig.googleClientId && connConfig.gasDeploymentId);
 
-  // Google Identity Services Sign in with Google ボタンの描画
+  // 前回ログイン済みのアカウントヒントがある場合、ワンクリックでOAuthトークン再取得＋GAS本人確認で即時復帰
+  const handleQuickResumeSession = async (hintEmail: string, hintName: string, hintPicture: string, idTokenStr = '', idTokenExp = 0) => {
+    setIsAuthenticating(true);
+    setAuthError(null);
+    try {
+      const tokenRes = await requestGoogleAccessToken({
+        clientId: connConfig.googleClientId,
+        loginHintEmail: hintEmail,
+        prompt: ''
+      });
+
+      const tempUser = {
+        email: hintEmail,
+        name: hintName || hintEmail,
+        picture: hintPicture,
+        idToken: idTokenStr,
+        idTokenExp: idTokenExp || Math.floor(tokenRes.expiresAt / 1000),
+        accessToken: tokenRes.accessToken,
+        accessTokenExpiresAt: tokenRes.expiresAt
+      };
+      useAppStore.getState().setAuthUser(tempUser);
+
+      const verifyRes = await callAdminApi<{ authenticated: boolean; email: string }>('auth.verify', {});
+      const confirmedUser = {
+        ...tempUser,
+        email: verifyRes.email || hintEmail
+      };
+
+      onAuthenticated(confirmedUser);
+    } catch (err) {
+      useAppStore.getState().clearAuth();
+      setAuthError(
+        err instanceof Error
+          ? err.message
+          : 'セッションの再開に失敗しました。もう一度Googleログインを実行してください。'
+      );
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
+  // Google Identity Services Sign in with Google ボタン & 自動One Tap復帰の初期化
   useEffect(() => {
     if (!isConfigured || !googleButtonContainerRef.current) return;
 
@@ -342,6 +393,7 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
                   auto_select?: boolean;
                 }) => void;
                 renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
+                prompt: () => void;
               };
             };
           };
@@ -349,9 +401,12 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
 
         if (!gId) return;
 
+        const hasHint = Boolean(getSavedAdminHint());
+
         gId.initialize({
           client_id: connConfig.googleClientId,
-          auto_select: false,
+          // 前回ログイン済み（ログアウトしていない）場合は auto_select を有効にして自動選択させる
+          auto_select: hasHint,
           callback: async (response) => {
             if (!response.credential) {
               setAuthError('Google IDトークンが取得できませんでした。');
@@ -362,12 +417,23 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
                 response.credential,
                 connConfig.googleClientId
               );
-              setPendingIdToken({
+              const nextPending = {
                 idToken: response.credential,
                 email: claims.email,
                 name: claims.name || claims.email,
                 picture: claims.picture || '',
                 exp: claims.exp
+              };
+              setPendingIdToken(nextPending);
+              setSavedHint({
+                email: nextPending.email,
+                name: nextPending.name,
+                picture: nextPending.picture
+              });
+              saveAdminHint({
+                email: nextPending.email,
+                name: nextPending.name,
+                picture: nextPending.picture
               });
               setAuthError(null);
             } catch (err) {
@@ -385,6 +451,14 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
           shape: 'rectangular',
           width: 320
         });
+
+        if (hasHint) {
+          try {
+            gId.prompt();
+          } catch {
+            // ignore One Tap prompt error
+          }
+        }
       })
       .catch((err) => {
         if (!cancelled) {
@@ -544,10 +618,46 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
           </form>
         ) : (
           <div className="space-y-4">
+            {/* 前回ログイン済みの場合：1クリックで即座にセッション復帰（アクセストークン自体はlocalStorageに保存せず安全に再取得） */}
+            {savedHint && !pendingIdToken && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded space-y-3">
+                <div className="text-xs">
+                  <span className="text-blue-800 font-semibold block">前回のログインアカウントが記憶されています</span>
+                  <span className="font-mono text-slate-900 font-bold mt-0.5 block">{savedHint.email}</span>
+                  <span className="text-[11px] text-slate-600 block mt-1">
+                    ※セキュリティ要件によりアクセストークンはブラウザに保存していませんが、下のボタン1クリックで即座に再開できます。
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isAuthenticating}
+                    onClick={() =>
+                      handleQuickResumeSession(savedHint.email, savedHint.name, savedHint.picture)
+                    }
+                    className="flex-1 py-2 px-4 text-xs font-semibold bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isAuthenticating ? 'セッションを再開中...' : `${savedHint.email} で即座に再開する（1クリック）`}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearSavedAdminHint();
+                      setSavedHint(null);
+                    }}
+                    className="px-2.5 py-2 text-xs text-slate-600 hover:text-slate-900 border border-slate-300 bg-white rounded"
+                    title="記憶したアカウントをクリア"
+                  >
+                    切替
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Step 1: Google Identity Services Sign in with Google (IDトークン本人確認) */}
             <div className="space-y-2">
               <div className="text-xs font-semibold text-slate-700">
-                Step 1: Googleアカウント本人確認 (IDトークン検証)
+                {savedHint ? 'または Google ボタンからサインイン:' : 'Step 1: Googleアカウント本人確認 (IDトークン検証)'}
               </div>
               <div ref={googleButtonContainerRef} className="min-h-[44px] flex items-center" />
             </div>
