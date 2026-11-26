@@ -1,0 +1,79 @@
+/*
+ * src/css/layout.css
+ * PC/Macでの操作性を最優先しつつ、タブレット・スマートフォンにもレスポンシブ対応するレイアウト定義。
+ */
+
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.admin-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background-color: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1e293b;
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+}
+
+.admin-header {
+  height: 56px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 20px 24px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 記事エディタの2カラム分割レイアウト（PCでは左右並列、タブレット以下では上下またはタブ切り替え） */
+.editor-split-pane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 640px;
+}
+
+@media (max-width: 1024px) {
+  .editor-split-pane {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-shell {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .admin-content {
+    padding: 14px;
+  }
+}
