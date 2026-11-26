@@ -164,6 +164,31 @@ export const applicationInputSchema = z.object({
 
 export type ApplicationInput = z.infer<typeof applicationInputSchema>;
 
+export const articleTemplateInputSchema = z.object({
+  repositoryId: z.string().trim().max(100),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'テンプレート名は必須です')
+    .max(100, 'テンプレート名は100文字以内で入力してください'),
+  description: z
+    .string()
+    .trim()
+    .max(300, '説明は300文字以内で入力してください'),
+  filenamePattern: z
+    .string()
+    .trim()
+    .max(150, 'ファイル名初期パターンは150文字以内で入力してください')
+    .refine((v) => !v.includes('..') && !v.includes('\\'), '不正なパス文字列が含まれています'),
+  content: z
+    .string()
+    .min(1, 'テンプレート本文は必須です')
+    .max(50000, 'テンプレート本文は50,000文字以内で入力してください'),
+  isDefault: z.boolean()
+});
+
+export type ArticleTemplateInput = z.infer<typeof articleTemplateInputSchema>;
+
 export const publicConnectionConfigSchema = z.object({
   googleClientId: z
     .string()

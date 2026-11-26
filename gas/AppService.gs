@@ -11,7 +11,12 @@ function formatApplicationRecord_(rec) {
     appStoreUrl: String(rec.appStoreUrl || ''),
     isActive: parseBooleanCell_(rec.isActive),
     createdAt: String(rec.createdAt || ''),
-    updatedAt: String(rec.updatedAt || '')
+    updatedAt: String(rec.updatedAt || ''),
+    ascAppId: String(rec.ascAppId || ''),
+    sku: String(rec.sku || ''),
+    latestVersion: String(rec.latestVersion || ''),
+    appStoreState: String(rec.appStoreState || ''),
+    platform: String(rec.platform || '')
   };
 }
 
@@ -103,7 +108,12 @@ function updateApplication_(id, input, actorEmail) {
         appStoreUrl: validated.appStoreUrl,
         isActive: validated.isActive,
         createdAt: existing.createdAt || now,
-        updatedAt: now
+        updatedAt: now,
+        ascAppId: existing.ascAppId || '',
+        sku: existing.sku || '',
+        latestVersion: existing.latestVersion || '',
+        appStoreState: existing.appStoreState || '',
+        platform: existing.platform || ''
       };
     });
 

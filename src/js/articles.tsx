@@ -37,7 +37,9 @@ import {
   ArrowUpDown,
   Layers,
   FolderUp,
-  X
+  X,
+  FileCode2,
+  BookmarkPlus
 } from 'lucide-react';
 import { callAdminApi, AdminApiError } from './api';
 import { useAppStore } from './store';
@@ -56,6 +58,7 @@ import type {
   ArticleListResponse,
   ArticleSaveResult,
   ArticleSummary,
+  ArticleTemplateItem,
   RepositoryConfig,
   ShaConflictDetails
 } from '../types/domain';
@@ -102,6 +105,10 @@ export const ArticlesSection: React.FC = () => {
   const [saveConfirmMode, setSaveConfirmMode] = useState<'single' | 'batch' | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ path: string; sha: string; title: string } | null>(null);
   const [shaConflict, setShaConflict] = useState<ShaConflictDetails | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [isSaveAsTemplateOpen, setIsSaveAsTemplateOpen] = useState<boolean>(false);
+  const [newTemplateName, setNewTemplateName] = useState<string>('');
+  const [newTemplateDesc, setNewTemplateDesc] = useState<string>('');
 
   const activeTab = useMemo(() => {
     return tabs.find((t) => t.tabId === activeTabId) ?? tabs[0] ?? null;
@@ -146,6 +153,20 @@ export const ArticlesSection: React.FC = () => {
   const currentRepo = useMemo(() => {
     return activeRepositories.find((r) => r.id === selectedRepositoryId) ?? null;
   }, [activeRepositories, selectedRepositoryId]);
+
+  // 1.5. 保存済み記事テンプレート一覧の取得
+  const templatesQuery = useQuery({
+    queryKey: ['articleTemplates'],
+    queryFn: () => callAdminApi<{ templates: ArticleTemplateItem[] }>('templates.list', {})
+  });
+
+  // 現在選択中のリポジトリで利用可能なテンプレート一覧（共通 + リポジトリ専用）
+  const availableTemplates = useMemo(() => {
+    const all = templatesQuery.data?.templates ?? [];
+    return all.filter(
+      (tpl) => !tpl.repositoryId || tpl.repositoryId === selectedRepositoryId
+    );
+  }, [templatesQuery.data, selectedRepositoryId]);
 
   // 2. 選択中リポジトリの記事一覧取得
   const articlesQuery = useQuery({
@@ -260,17 +281,34 @@ export const ArticlesSection: React.FC = () => {
     }
   });
 
-  // 4. 新規記事タブを追加（複数ファイルを連続で追加作成可能）
-  const handleAddNewArticleTab = () => {
+  // 4. 新規記事タブを追加（選択されたテンプレートまたはデフォルトテンプレートを自動適用）
+  const handleAddNewArticleTab = (overrideTemplateId?: string) => {
     if (!currentRepo) return;
     const countSuffix = tabs.filter((t) => t.isNew).length + 1;
     const defaultSlug = countSuffix === 1 ? 'new-article' : `new-article-${countSuffix}`;
-    const defaultFilename = `${defaultSlug}${currentRepo.markdownExt}`;
+
+    const tplIdToUse = overrideTemplateId !== undefined ? overrideTemplateId : selectedTemplateId;
+    const chosenTpl =
+      availableTemplates.find((t) => t.id === tplIdToUse) ||
+      availableTemplates.find((t) => t.isDefault) ||
+      null;
+
+    const today = new Date().toISOString().slice(0, 10);
+    let defaultFilename = `${defaultSlug}${currentRepo.markdownExt}`;
+    if (chosenTpl && chosenTpl.filenamePattern) {
+      const patternApplied = chosenTpl.filenamePattern
+        .replace(/\{slug\}/g, defaultSlug)
+        .replace(/\{date\}/g, today);
+      defaultFilename = /\.(md|mdx|markdown)$/i.test(patternApplied)
+        ? patternApplied
+        : `${patternApplied}${currentRepo.markdownExt}`;
+    }
+
     const initialMd = buildInitialArticleMarkdown({
-      title: 'Cyano – サポート',
+      title: chosenTpl ? chosenTpl.name : 'Cyano – サポート',
       slug: defaultSlug,
       format: currentRepo.frontmatterFormat,
-      defaultTemplate: currentRepo.defaultTemplate
+      defaultTemplate: chosenTpl ? chosenTpl.content : currentRepo.defaultTemplate
     });
 
     const newTab: ArticleEditorTab = {
@@ -295,6 +333,65 @@ export const ArticlesSection: React.FC = () => {
     setShaConflict(null);
     setMode('editor');
   };
+
+  // 現在開いているタブに選択したテンプレートを適用する
+  const handleApplyTemplateToActiveTab = (templateId: string) => {
+    if (!activeTab || !currentRepo) return;
+    const tpl = availableTemplates.find((t) => t.id === templateId);
+    if (!tpl) return;
+    if (activeTab.content.trim().length > 0) {
+      const ok = window.confirm(
+        `現在編集中の「${activeTab.filenameInput}」にテンプレート「${tpl.name}」の内容を適用（上書き）しますか？`
+      );
+      if (!ok) return;
+    }
+    const slug = activeTab.filenameInput.replace(/\.(md|mdx|markdown)$/i, '') || 'article';
+    const nextMd = buildInitialArticleMarkdown({
+      title: tpl.name,
+      slug,
+      format: currentRepo.frontmatterFormat,
+      defaultTemplate: tpl.content
+    });
+    handleActiveTabContentChange(nextMd);
+    pushToast({
+      type: 'info',
+      title: `テンプレート「${tpl.name}」を適用しました`
+    });
+  };
+
+  // 現在エディタで書いている内容を新規テンプレートとして保存する Mutation
+  const saveCurrentAsTemplateMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeTab || !currentRepo) throw new Error('保存対象のエディタがありません');
+      if (!newTemplateName.trim()) throw new Error('テンプレート名を入力してください');
+      return callAdminApi<ArticleTemplateItem>('templates.create', {
+        repositoryId: currentRepo.id,
+        name: newTemplateName.trim(),
+        description: newTemplateDesc.trim(),
+        filenamePattern: `{slug}${currentRepo.markdownExt}`,
+        content: activeTab.content,
+        isDefault: false
+      });
+    },
+    onSuccess: (saved) => {
+      setIsSaveAsTemplateOpen(false);
+      setNewTemplateName('');
+      setNewTemplateDesc('');
+      queryClient.invalidateQueries({ queryKey: ['articleTemplates'] });
+      pushToast({
+        type: 'success',
+        title: '現在の記事内容をテンプレートとして保存しました',
+        message: `テンプレート名: ${saved.name}`
+      });
+    },
+    onError: (err) => {
+      pushToast({
+        type: 'error',
+        title: 'テンプレート保存に失敗しました',
+        message: err instanceof Error ? err.message : '保存エラー'
+      });
+    }
+  });
 
   // 5. ローカルPC/スマホから複数のMarkdownファイル（.md / .mdx）を一気に読み込んでタブに展開
   const handleImportLocalMarkdownFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -884,9 +981,24 @@ export const ArticlesSection: React.FC = () => {
                 <FolderUp className="w-3.5 h-3.5" />
                 <span>複数MDファイル読込</span>
               </button>
+              {availableTemplates.length > 0 && (
+                <select
+                  value={selectedTemplateId}
+                  onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-800"
+                  title="新規作成時に使用する記事テンプレートを選択"
+                >
+                  <option value="">標準テンプレートで作成</option>
+                  {availableTemplates.map((tpl) => (
+                    <option key={tpl.id} value={tpl.id}>
+                      テンプレ: {tpl.name}
+                    </option>
+                  ))}
+                </select>
+              )}
               <button
                 type="button"
-                onClick={handleAddNewArticleTab}
+                onClick={() => handleAddNewArticleTab()}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded hover:bg-slate-800"
               >
                 <Plus className="w-4 h-4" />
@@ -897,7 +1009,7 @@ export const ArticlesSection: React.FC = () => {
             <>
               <button
                 type="button"
-                onClick={handleAddNewArticleTab}
+                onClick={() => handleAddNewArticleTab()}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-800 bg-slate-100 border border-slate-300 rounded hover:bg-slate-200"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -1079,7 +1191,7 @@ export const ArticlesSection: React.FC = () => {
             })}
             <button
               type="button"
-              onClick={handleAddNewArticleTab}
+              onClick={() => handleAddNewArticleTab()}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded shrink-0"
               title="もう1つ新しい記事ファイルタブを追加します"
             >
@@ -1088,7 +1200,7 @@ export const ArticlesSection: React.FC = () => {
             </button>
           </div>
 
-          {/* ファイル名自由設定・コミットメッセージ・保存操作バー */}
+          {/* ファイル名自由設定・テンプレート適用/保存・コミットメッセージ・保存操作バー */}
           <div className="bg-white border border-slate-200 rounded-md p-3.5 sm:p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -1104,11 +1216,39 @@ export const ArticlesSection: React.FC = () => {
                 <span className="text-xs text-slate-600">
                   開いているファイル: <strong>{tabs.length}</strong> 件
                 </span>
-                {!activeTab.isNew && activeTab.sha && (
-                  <span className="text-xs font-mono text-slate-500">
-                    SHA: {activeTab.sha.slice(0, 8)}
-                  </span>
+
+                {/* 保存済みテンプレートの呼び出しと新規テンプレート登録 */}
+                {availableTemplates.length > 0 && (
+                  <div className="inline-flex items-center gap-1">
+                    <FileCode2 className="w-3.5 h-3.5 text-slate-500" />
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleApplyTemplateToActiveTab(e.target.value);
+                        }
+                      }}
+                      className="px-2 py-1 text-xs border border-slate-300 rounded bg-slate-50 text-slate-800"
+                    >
+                      <option value="">保存済みテンプレートを反映...</option>
+                      {availableTemplates.map((tpl) => (
+                        <option key={tpl.id} value={tpl.id}>
+                          {tpl.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => setIsSaveAsTemplateOpen(true)}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded"
+                  title="今エディタに書いている内容を、再利用可能な記事テンプレートとして保存します"
+                >
+                  <BookmarkPlus className="w-3.5 h-3.5" />
+                  <span>現在の内容をテンプレ保存</span>
+                </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -1409,6 +1549,65 @@ export const ArticlesSection: React.FC = () => {
                 className="px-4 py-1.5 text-xs font-semibold bg-amber-700 text-white rounded hover:bg-amber-800"
               >
                 最新SHAを引き継いで現在の編集内容を維持する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* モーダル4: 現在の記事内容を新規テンプレートとして保存 */}
+      {isSaveAsTemplateOpen && activeTab && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-md max-w-md w-full p-5 space-y-4 shadow-lg">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+              <h3 className="text-base font-bold text-slate-900">現在の内容を記事テンプレートとして保存</h3>
+              <button
+                type="button"
+                onClick={() => setIsSaveAsTemplateOpen(false)}
+                className="text-xs text-slate-500 hover:text-slate-900"
+              >
+                閉じる
+              </button>
+            </div>
+            <p className="text-xs text-slate-600">
+              現在エディタに入力されている Frontmatter と本文を Google Sheets (`ArticleTemplates` シート) に保存し、次回からいつでも呼び出せるようにします。
+            </p>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">テンプレート名 *</label>
+                <input
+                  type="text"
+                  value={newTemplateName}
+                  onChange={(e) => setNewTemplateName(e.target.value)}
+                  placeholder="アプリサポートページ標準 / プライバシーポリシー"
+                  className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">用途メモ（任意）</label>
+                <input
+                  type="text"
+                  value={newTemplateDesc}
+                  onChange={(e) => setNewTemplateDesc(e.target.value)}
+                  placeholder="新規iOSアプリ公開時のサポート記事用"
+                  className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsSaveAsTemplateOpen(false)}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                disabled={saveCurrentAsTemplateMutation.isPending || !newTemplateName.trim()}
+                onClick={() => saveCurrentAsTemplateMutation.mutate()}
+                className="px-4 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded hover:bg-slate-800 disabled:opacity-50"
+              >
+                {saveCurrentAsTemplateMutation.isPending ? '保存中...' : 'テンプレートとして保存'}
               </button>
             </div>
           </div>

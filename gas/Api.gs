@@ -122,10 +122,23 @@ function routeAdminAction_(action, params, actorEmail) {
     case 'inquiries.update':
       return updateInquiryAdmin_(params.id, params, actorEmail);
 
-    // --- Applications ---
+    // --- Article Templates (複数記事テンプレート管理) ---
+    case 'templates.list':
+      return {
+        templates: listArticleTemplates_(params)
+      };
+    case 'templates.create':
+      return createArticleTemplate_(params, actorEmail);
+    case 'templates.update':
+      return updateArticleTemplate_(params.id, params, actorEmail);
+    case 'templates.delete':
+      return deleteArticleTemplate_(params.id, actorEmail);
+
+    // --- Applications & App Store Connect API ---
     case 'applications.list':
       return {
-        applications: listApplications_()
+        applications: listApplications_(),
+        ascStatus: getAppStoreConnectConfigStatus_()
       };
     case 'applications.create':
       return createApplication_(params, actorEmail);
@@ -133,6 +146,8 @@ function routeAdminAction_(action, params, actorEmail) {
       return updateApplication_(params.id, params, actorEmail);
     case 'applications.delete':
       return deleteApplication_(params.id, actorEmail);
+    case 'applications.syncAsc':
+      return syncApplicationsWithAppStoreConnect_(actorEmail);
 
     // --- Settings / System ---
     case 'settings.get':
@@ -264,6 +279,7 @@ function getSystemSettings_(actorEmail) {
     availableTokenKeys: listAvailableGitHubTokenKeys_(),
     oauthClientIdConfigured: Boolean(getOAuthClientId_()),
     scheduledNoticeTriggerActive: hasNoticeTrigger,
+    ascStatus: getAppStoreConnectConfigStatus_(),
     timeZone: Session.getScriptTimeZone() || 'Asia/Tokyo'
   };
 }

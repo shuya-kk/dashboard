@@ -8,6 +8,7 @@ var CONFIG = {
   SHEETS: {
     APPLICATIONS: 'Applications',
     REPOSITORIES: 'Repositories',
+    ARTICLE_TEMPLATES: 'ArticleTemplates',
     NOTICES: 'Notices',
     INQUIRIES: 'Inquiries',
     OPERATION_LOGS: 'OperationLogs'
@@ -20,7 +21,12 @@ var CONFIG = {
       'appStoreUrl',
       'isActive',
       'createdAt',
-      'updatedAt'
+      'updatedAt',
+      'ascAppId',
+      'sku',
+      'latestVersion',
+      'appStoreState',
+      'platform'
     ],
     Repositories: [
       'id',
@@ -37,6 +43,17 @@ var CONFIG = {
       'articleUrlPattern',
       'tokenPropertyKey',
       'isActive',
+      'createdAt',
+      'updatedAt'
+    ],
+    ArticleTemplates: [
+      'id',
+      'repositoryId',
+      'name',
+      'description',
+      'filenamePattern',
+      'content',
+      'isDefault',
       'createdAt',
       'updatedAt'
     ],
@@ -167,4 +184,26 @@ function listAvailableGitHubTokenKeys_() {
   }
   keys.sort();
   return keys;
+}
+
+/**
+ * App Store Connect API の認証情報が Script Properties に設定されているかどうかのステータスのみを返す
+ * ※秘密鍵（ASC_PRIVATE_KEY）やKey ID、Issuer IDの値そのものは絶対にフロントエンドへ返さない
+ */
+function getAppStoreConnectConfigStatus_() {
+  var props = PropertiesService.getScriptProperties();
+  var issuerId = props.getProperty('ASC_ISSUER_ID');
+  var keyId = props.getProperty('ASC_KEY_ID');
+  var privateKey = props.getProperty('ASC_PRIVATE_KEY');
+
+  var hasIssuer = Boolean(issuerId && String(issuerId).trim().length > 0);
+  var hasKeyId = Boolean(keyId && String(keyId).trim().length > 0);
+  var hasPrivateKey = Boolean(privateKey && String(privateKey).trim().length > 0);
+
+  return {
+    configured: hasIssuer && hasKeyId && hasPrivateKey,
+    hasIssuerId: hasIssuer,
+    hasKeyId: hasKeyId,
+    hasPrivateKey: hasPrivateKey
+  };
 }

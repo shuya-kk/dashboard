@@ -152,8 +152,12 @@ GASの `scripts.run`（Apps Script API）を自分のGoogleアカウントだけ
 | `SPREADSHEET_ID` | Step 1 で控えたGoogleスプレッドシートID | 必須 |
 | `OAUTH_CLIENT_ID` | Step 3-4 で控えた OAuth 2.0 クライアントID（`...apps.googleusercontent.com`） | 推奨 |
 | `GITHUB_TOKEN_PORTFOLIO` | Step 2 で発行した GitHub Fine-grained PAT（`github_pat_...`） | 必須 |
+| `ASC_ISSUER_ID` | App Store Connect API の Issuer ID（UUID形式） | App Store連携時 |
+| `ASC_KEY_ID` | App Store Connect API キーの Key ID（例：`2X9R4HXF34`） | App Store連携時 |
+| `ASC_PRIVATE_KEY` | ダウンロードした `AuthKey_XXXX.p8` ファイルの全文（`-----BEGIN PRIVATE KEY-----` から末尾まで） | App Store連携時 |
 
 ※2つ目・3つ目のGitHubリポジトリ用に別トークンを使う場合は、`GITHUB_TOKEN_BLOG` や `GITHUB_TOKEN_APP_DOCS` のように **`GITHUB_TOKEN_` で始まる大文字英数字・アンダースコアの名前** で追加登録できます。
+※**App Store Connect API の秘密鍵（`ASC_PRIVATE_KEY` 等）は GAS の Script Properties にのみ保存され、ブラウザ側（GitHub Pages）には1文字も送信されません。** GAS 内部で ES256 (ECDSA P-256) JWT を生成して Apple 公式サーバー（`api.appstoreconnect.apple.com`）と直接通信します。
 
 ### 4-4. スプレッドシートの初期化と時間主導型トリガーの自動設定
 

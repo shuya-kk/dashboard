@@ -25,6 +25,30 @@ export interface ApplicationItem {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  ascAppId?: string;
+  sku?: string;
+  latestVersion?: string;
+  appStoreState?: string;
+  platform?: string;
+}
+
+export interface AppStoreConnectConfigStatus {
+  configured: boolean;
+  hasIssuerId: boolean;
+  hasKeyId: boolean;
+  hasPrivateKey: boolean;
+}
+
+export interface ArticleTemplateItem {
+  id: string;
+  repositoryId: string; // 空文字の場合は全リポジトリ共通
+  name: string;
+  description: string;
+  filenamePattern: string;
+  content: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RepositoryConfig {
@@ -163,6 +187,7 @@ export interface SystemSettingsInfo {
   availableTokenKeys: string[];
   oauthClientIdConfigured: boolean;
   scheduledNoticeTriggerActive: boolean;
+  ascStatus?: AppStoreConnectConfigStatus;
   timeZone: string;
 }
 

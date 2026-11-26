@@ -20,6 +20,7 @@ import { useAppStore } from '../src/js/store';
 import {
   applicationInputSchema,
   articleSaveSchema,
+  articleTemplateInputSchema,
   noticeInputSchema,
   repositoryInputSchema
 } from '../src/schemas/validation';
@@ -190,6 +191,28 @@ describe('3. お知らせ・アプリ・入力値検証', () => {
       isActive: true
     });
     expect(invalidApp.success).toBe(false);
+  });
+
+  it('複数記事テンプレートのスキーマ検証が機能し、不正なファイル名パターン（..）を拒否する', () => {
+    const validTpl = articleTemplateInputSchema.safeParse({
+      repositoryId: '',
+      name: 'アプリサポート用テンプレート',
+      description: 'サポート記事標準',
+      filenamePattern: 'support-{slug}.md',
+      content: '---\ntitle: "{title}"\npubDate: {pubDate}\n---\n本文',
+      isDefault: true
+    });
+    expect(validTpl.success).toBe(true);
+
+    const invalidTpl = articleTemplateInputSchema.safeParse({
+      repositoryId: '',
+      name: '不正テンプレ',
+      description: '',
+      filenamePattern: '../secret.md',
+      content: 'body',
+      isDefault: false
+    });
+    expect(invalidTpl.success).toBe(false);
   });
 });
 

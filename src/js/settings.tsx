@@ -22,17 +22,21 @@ import {
   ExternalLink,
   CheckCircle2,
   KeyRound,
-  Globe
+  Globe,
+  FileCode2
 } from 'lucide-react';
 import { callAdminApi } from './api';
 import { useAppStore } from './store';
 import {
-  formatDateTimeJst,
   getPublicConnectionConfig,
   savePublicConnectionConfig
 } from './utils';
-import { repositoryInputSchema } from '../schemas/validation';
+import {
+  repositoryInputSchema,
+  articleTemplateInputSchema
+} from '../schemas/validation';
 import type {
+  ArticleTemplateItem,
   FrontmatterFormat,
   RepositoryConfig,
   SystemSettingsInfo
@@ -73,6 +77,18 @@ export const SettingsSection: React.FC = () => {
 
   const [deleteRepoTarget, setDeleteRepoTarget] = useState<RepositoryConfig | null>(null);
 
+  // 複数記事テンプレート管理用モーダル状態
+  const [isTplModalOpen, setIsTplModalOpen] = useState<boolean>(false);
+  const [editingTpl, setEditingTpl] = useState<ArticleTemplateItem | null>(null);
+  const [tplRepoId, setTplRepoId] = useState<string>('');
+  const [tplName, setTplName] = useState<string>('');
+  const [tplDescription, setTplDescription] = useState<string>('');
+  const [tplFilenamePattern, setTplFilenamePattern] = useState<string>('{slug}.md');
+  const [tplContent, setTplContent] = useState<string>(DEFAULT_YAML_TEMPLATE);
+  const [tplIsDefault, setTplIsDefault] = useState<boolean>(false);
+  const [tplFormError, setTplFormError] = useState<string | null>(null);
+  const [deleteTplTarget, setDeleteTplTarget] = useState<ArticleTemplateItem | null>(null);
+
   // 公開API WebApp URLの保存用
   const [connConfig, setConnConfig] = useState(() => getPublicConnectionConfig());
 
@@ -82,6 +98,14 @@ export const SettingsSection: React.FC = () => {
     queryFn: () =>
       callAdminApi<{ repositories: RepositoryConfig[]; availableTokenKeys: string[] }>('repositories.list')
   });
+
+  // 記事テンプレート一覧の取得
+  const templatesQuery = useQuery({
+    queryKey: ['articleTemplates'],
+    queryFn: () =>
+      callAdminApi<{ templates: ArticleTemplateItem[] }>('templates.list', {})
+  });
+  const articleTemplates = templatesQuery.data?.templates ?? [];
 
   // システム設定状態の取得
   const settingsQuery = useQuery({
@@ -236,6 +260,78 @@ export const SettingsSection: React.FC = () => {
     });
   };
 
+  // 記事テンプレートモーダル操作
+  const openCreateTplModal = () => {
+    setEditingTpl(null);
+    setTplRepoId('');
+    setTplName('');
+    setTplDescription('');
+    setTplFilenamePattern('{slug}.md');
+    setTplContent(DEFAULT_YAML_TEMPLATE);
+    setTplIsDefault(false);
+    setTplFormError(null);
+    setIsTplModalOpen(true);
+  };
+
+  const openEditTplModal = (tpl: ArticleTemplateItem) => {
+    setEditingTpl(tpl);
+    setTplRepoId(tpl.repositoryId);
+    setTplName(tpl.name);
+    setTplDescription(tpl.description);
+    setTplFilenamePattern(tpl.filenamePattern || '{slug}.md');
+    setTplContent(tpl.content);
+    setTplIsDefault(tpl.isDefault);
+    setTplFormError(null);
+    setIsTplModalOpen(true);
+  };
+
+  const saveTplMutation = useMutation({
+    mutationFn: async () => {
+      const parsed = articleTemplateInputSchema.safeParse({
+        repositoryId: tplRepoId,
+        name: tplName,
+        description: tplDescription,
+        filenamePattern: tplFilenamePattern || '{slug}.md',
+        content: tplContent,
+        isDefault: tplIsDefault
+      });
+      if (!parsed.success) {
+        throw new Error(parsed.error.issues[0]?.message || '入力内容を確認してください');
+      }
+      if (editingTpl) {
+        return callAdminApi<ArticleTemplateItem>('templates.update', {
+          id: editingTpl.id,
+          ...parsed.data
+        });
+      }
+      return callAdminApi<ArticleTemplateItem>('templates.create', parsed.data);
+    },
+    onSuccess: (saved) => {
+      setIsTplModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['articleTemplates'] });
+      pushToast({
+        type: 'success',
+        title: editingTpl ? '記事テンプレートを更新しました' : '記事テンプレートを追加しました',
+        message: `テンプレート名: ${saved.name}`
+      });
+    },
+    onError: (err) => {
+      setTplFormError(err instanceof Error ? err.message : '保存エラー');
+    }
+  });
+
+  const deleteTplMutation = useMutation({
+    mutationFn: (id: string) => callAdminApi<{ deletedId: string }>('templates.delete', { id }),
+    onSuccess: () => {
+      setDeleteTplTarget(null);
+      queryClient.invalidateQueries({ queryKey: ['articleTemplates'] });
+      pushToast({
+        type: 'success',
+        title: '記事テンプレートを削除しました'
+      });
+    }
+  });
+
   return (
     <div className="space-y-6">
       {/* 1. GitHub複数リポジトリ管理 */}
@@ -358,6 +454,105 @@ export const SettingsSection: React.FC = () => {
                             onClick={() => setDeleteRepoTarget(item)}
                             className="p-1.5 text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-red-200"
                             title="登録削除"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 1.5. 複数記事テンプレート管理 (ArticleTemplates) */}
+      <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+              <FileCode2 className="w-4 h-4 text-slate-700" />
+              <span>記事テンプレート管理（複数テンプレート保存・ArticleTemplates）</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              サポートページ用、リリースノート用、プライバシーポリシー用など、用途別のMarkdownテンプレートを複数保存し、記事作成時にワンクリックで呼び出せます。
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={openCreateTplModal}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded hover:bg-slate-800"
+          >
+            <Plus className="w-4 h-4" />
+            <span>新規テンプレート追加</span>
+          </button>
+        </div>
+
+        {templatesQuery.isLoading ? (
+          <div className="p-6 text-center text-sm text-slate-600">テンプレート一覧を読み込み中...</div>
+        ) : articleTemplates.length === 0 ? (
+          <div className="p-6 text-center text-xs text-slate-500">
+            登録されている記事テンプレートはまだありません。「新規テンプレート追加」または記事エディタ画面の「現在の内容をテンプレ保存」から複数登録できます。
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-600">
+                  <th className="py-2.5 px-4 font-semibold">テンプレート名</th>
+                  <th className="py-2.5 px-4 font-semibold">対象リポジトリ</th>
+                  <th className="py-2.5 px-4 font-semibold">初期ファイル名パターン</th>
+                  <th className="py-2.5 px-4 font-semibold">説明</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 text-sm">
+                {articleTemplates.map((tpl) => {
+                  const targetRepo = repositories.find((r) => r.id === tpl.repositoryId);
+                  return (
+                    <tr key={tpl.id} className="hover:bg-slate-50">
+                      <td className="py-2.5 px-4">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <span>{tpl.name}</span>
+                          {tpl.isDefault && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-800 rounded">
+                              標準
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-4 text-xs">
+                        {targetRepo ? (
+                          <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded font-medium text-slate-800">
+                            {targetRepo.displayName}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600">全リポジトリ共通</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-4 font-mono text-xs text-slate-700">
+                        {tpl.filenamePattern || '{slug}.md'}
+                      </td>
+                      <td className="py-2.5 px-4 text-xs text-slate-600">
+                        {tpl.description || '—'}
+                      </td>
+                      <td className="py-2.5 px-4">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openEditTplModal(tpl)}
+                            className="p-1.5 text-slate-700 hover:bg-slate-100 rounded border border-slate-200"
+                            title="テンプレート編集"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTplTarget(tpl)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-red-200"
+                            title="削除"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -752,6 +947,157 @@ export const SettingsSection: React.FC = () => {
                 className="px-4 py-1.5 text-xs font-semibold bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
               >
                 {deleteRepoMutation.isPending ? '削除中...' : '登録を解除する'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 記事テンプレート追加・編集モーダル */}
+      {isTplModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-md max-w-2xl w-full p-5 space-y-4 shadow-lg max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-base font-bold text-slate-900">
+                {editingTpl ? '記事テンプレートの編集' : '新規記事テンプレートの登録'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsTplModalOpen(false)}
+                className="text-xs text-slate-500 hover:text-slate-900"
+              >
+                閉じる
+              </button>
+            </div>
+
+            {tplFormError && (
+              <div className="p-2.5 bg-red-50 border border-red-200 rounded text-xs text-red-800 font-medium">
+                {tplFormError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">テンプレート名 *</label>
+                <input
+                  type="text"
+                  value={tplName}
+                  onChange={(e) => setTplName(e.target.value)}
+                  placeholder="アプリサポートページ用 / プライバシーポリシー用"
+                  className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">対象リポジトリ</label>
+                <select
+                  value={tplRepoId}
+                  onChange={(e) => setTplRepoId(e.target.value)}
+                  className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white"
+                >
+                  <option value="">すべてのリポジトリ共通</option>
+                  {repositories.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.displayName} ({r.owner}/{r.repo})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">
+                  ファイル名初期パターン（変数: {'{slug}'}, {'{date}'}）
+                </label>
+                <input
+                  type="text"
+                  value={tplFilenamePattern}
+                  onChange={(e) => setTplFilenamePattern(e.target.value)}
+                  placeholder="support-{slug}.md"
+                  className="w-full px-3 py-1.5 text-sm font-mono border border-slate-300 rounded bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">説明・用途メモ</label>
+                <input
+                  type="text"
+                  value={tplDescription}
+                  onChange={(e) => setTplDescription(e.target.value)}
+                  placeholder="新規アプリのサポートページ作成用"
+                  className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="text-xs">
+              <label className="block font-semibold text-slate-700 mb-1">
+                テンプレート本文 *（変数 {'{title}'}, {'{pubDate}'}, {'{date}'}, {'{slug}'} が自動置換されます）
+              </label>
+              <textarea
+                rows={10}
+                value={tplContent}
+                onChange={(e) => setTplContent(e.target.value)}
+                className="w-full px-3 py-2 text-xs font-mono border border-slate-300 rounded bg-white leading-relaxed"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                id="tpl-is-default"
+                type="checkbox"
+                checked={tplIsDefault}
+                onChange={(e) => setTplIsDefault(e.target.checked)}
+                className="rounded border-slate-300"
+              />
+              <label htmlFor="tpl-is-default" className="text-xs font-medium text-slate-800">
+                新規記事作成時の優先デフォルトテンプレートにする
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setIsTplModalOpen(false)}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                disabled={saveTplMutation.isPending}
+                onClick={() => saveTplMutation.mutate()}
+                className="px-4 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded hover:bg-slate-800 disabled:opacity-50"
+              >
+                {saveTplMutation.isPending ? '保存中...' : 'テンプレートを保存'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 記事テンプレート削除確認モーダル */}
+      {deleteTplTarget && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-md max-w-md w-full p-5 space-y-4 shadow-lg">
+            <h3 className="text-base font-bold text-red-700">テンプレートの削除確認</h3>
+            <p className="text-xs text-slate-700">
+              テンプレート「<strong>{deleteTplTarget.name}</strong>」を削除しますか？
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTplTarget(null)}
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                disabled={deleteTplMutation.isPending}
+                onClick={() => deleteTplMutation.mutate(deleteTplTarget.id)}
+                className="px-4 py-1.5 text-xs font-semibold bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleteTplMutation.isPending ? '削除中...' : '削除する'}
               </button>
             </div>
           </div>
