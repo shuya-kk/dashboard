@@ -23,8 +23,8 @@ import {
   AlertTriangle,
   X,
   Sliders,
-  Sprout,
-  ChevronDown
+  Menu,
+  CloudSun
 } from 'lucide-react';
 import { useAppStore } from './store';
 import {
@@ -63,15 +63,15 @@ const queryClient = new QueryClient({
 const NAV_ITEMS: Array<{
   id: SectionId;
   label: string;
-  shortLabel: string;
+  badgeColor: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { id: 'dashboard', label: 'ホーム', shortLabel: 'ホーム', icon: LayoutDashboard },
-  { id: 'articles', label: '記事ノート', shortLabel: '記事', icon: FileText },
-  { id: 'notices', label: 'お知らせ', shortLabel: 'お知らせ', icon: Bell },
-  { id: 'inquiries', label: 'おたより', shortLabel: 'おたより', icon: Inbox },
-  { id: 'applications', label: 'マイアプリ', shortLabel: 'アプリ', icon: AppWindow },
-  { id: 'settings', label: '設定', shortLabel: '設定', icon: Settings }
+  { id: 'dashboard', label: 'ホーム', badgeColor: 'bg-blue-100 text-blue-600', icon: LayoutDashboard },
+  { id: 'articles', label: '記事ノート', badgeColor: 'bg-indigo-100 text-indigo-600', icon: FileText },
+  { id: 'notices', label: 'お知らせ', badgeColor: 'bg-amber-100 text-amber-600', icon: Bell },
+  { id: 'inquiries', label: 'おたより', badgeColor: 'bg-sky-100 text-sky-600', icon: Inbox },
+  { id: 'applications', label: 'マイアプリ', badgeColor: 'bg-emerald-100 text-emerald-600', icon: AppWindow },
+  { id: 'settings', label: '設定', badgeColor: 'bg-slate-100 text-slate-600', icon: Settings }
 ];
 
 export const AdminDashboardApp: React.FC = () => {
@@ -100,7 +100,7 @@ const AdminShell: React.FC = () => {
 
   const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
   const [isReauthenticating, setIsReauthenticating] = useState<boolean>(false);
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // アクセストークンの残り有効期限を定期監視（15秒ごと）
   useEffect(() => {
@@ -180,123 +180,131 @@ const AdminShell: React.FC = () => {
   }
 
   return (
-    <div className="studio-shell">
-      {/* 上部フローティング・ピル型ナビゲーションドック（サイドバーを排した開放的なレイアウト） */}
-      <div className="studio-topbar-wrap">
-        <header className="studio-topbar">
-          {/* 左：ブランドマーク */}
-          <button
-            type="button"
-            onClick={() => setActiveSection('dashboard')}
-            className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-full hover:bg-slate-100 text-left shrink-0"
-          >
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
-              <Sprout className="w-4 h-4" />
+    <div className="admin-shell">
+      {/* スマホ用ドロワー背景オーバーレイ */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/35 backdrop-blur-xs z-30 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* 左サイドバー（すっきり＆柔らかなパステルブルー基調・枠線なし） */}
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="p-5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+              <CloudSun className="w-5 h-5" />
             </div>
-            <div className="leading-tight">
-              <div className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
+            <div>
+              <div className="text-sm font-bold text-slate-900 tracking-tight">
                 Dev Atelier
               </div>
-              <div className="text-[10px] text-slate-500 hidden sm:block">
-                個人開発ワークスペース
+              <div className="text-[11px] text-slate-500">
+                個人開発スタジオ
               </div>
             </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 bg-white rounded-full"
+            aria-label="メニューを閉じる"
+          >
+            <X className="w-4 h-4" />
           </button>
+        </div>
 
-          {/* 中央：PC向け ピル型ナビゲーション */}
-          <nav className="studio-nav-pills" aria-label="メインナビゲーション">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const active = activeSection === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveSection(item.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap ${
-                    active
-                      ? 'bg-white text-slate-900 font-bold shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium'
+        <nav className="flex-1 px-3 py-1 space-y-1.5 overflow-y-auto">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  setActiveSection(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-left transition-all ${
+                  active
+                    ? 'bg-white text-slate-900 font-bold shadow-sm'
+                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 font-medium'
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform ${
+                    active ? 'bg-blue-600 text-white scale-105' : item.badgeColor
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${active ? 'text-blue-600' : 'text-slate-500'}`} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* 右：トークン更新 & アカウントメニュー */}
-          <div className="flex items-center gap-2 shrink-0 relative">
-            <button
-              type="button"
-              disabled={isReauthenticating}
-              onClick={handleReauthenticate}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full"
-              title="OAuthアクセストークンの有効期限を延長します"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isReauthenticating ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">トークン更新</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsAccountMenuOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-full text-xs"
-            >
-              {authUser.picture ? (
-                <img
-                  src={authUser.picture}
-                  alt=""
-                  className="w-6 h-6 rounded-full shrink-0"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-                  {authUser.email.slice(0, 1).toUpperCase()}
+                  <Icon className="w-4 h-4" />
                 </div>
-              )}
-              <span className="hidden md:inline max-w-[120px] truncate font-mono text-[11px] text-slate-700">
-                {authUser.email.split('@')[0]}
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-            </button>
+                <span className="text-xs">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
 
-            {/* アカウントポップオーバー */}
-            {isAccountMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsAccountMenuOpen(false)}
-                />
-                <div className="absolute right-0 top-11 z-50 w-64 bg-white rounded-2xl p-3.5 shadow-lg space-y-3 text-xs">
-                  <div>
-                    <div className="text-[10px] text-slate-500">ログイン中のアカウント</div>
-                    <div className="font-mono font-semibold text-slate-900 break-all mt-0.5">
-                      {authUser.email}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAccountMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-full"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>ログアウト</span>
-                  </button>
-                </div>
-              </>
+        <div className="p-3.5 m-3 rounded-2xl bg-white/80 space-y-2.5 text-xs">
+          <div className="flex items-center gap-2">
+            {authUser.picture ? (
+              <img
+                src={authUser.picture}
+                alt=""
+                className="w-7 h-7 rounded-full shrink-0"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0">
+                {authUser.email.slice(0, 1).toUpperCase()}
+              </div>
             )}
+            <span className="font-mono text-[11px] font-medium text-slate-700 truncate">
+              {authUser.email.split('@')[0]}
+            </span>
           </div>
-        </header>
-      </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>ログアウト</span>
+          </button>
+        </div>
+      </aside>
 
-      {/* アクセストークン期限切れ・再認証バナー */}
-      {tokenExpiredMessage && (
-        <div className="max-w-[1440px] w-full mx-auto px-3 sm:px-6 pt-2">
-          <div className="bg-amber-50 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+      {/* メイン領域 */}
+      <div className="admin-main">
+        <header className="admin-header">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-2 -ml-1 text-slate-700 bg-white hover:bg-slate-100 rounded-full shadow-2xs shrink-0"
+              aria-label="メニューを開く"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+              {NAV_ITEMS.find((n) => n.id === activeSection)?.label}
+            </h1>
+          </div>
+
+          <button
+            type="button"
+            disabled={isReauthenticating}
+            onClick={handleReauthenticate}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-100 rounded-full shadow-2xs shrink-0"
+            title="OAuthアクセストークンの有効期限を延長します"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isReauthenticating ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">トークン更新</span>
+          </button>
+        </header>
+
+        {tokenExpiredMessage && (
+          <div className="mx-3 sm:mx-6 mt-2 bg-amber-50 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
             <div className="flex items-center gap-2 text-xs text-amber-900 font-medium">
               <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
               <span>{tokenExpiredMessage}</span>
@@ -307,44 +315,41 @@ const AdminShell: React.FC = () => {
               onClick={handleReauthenticate}
               className="px-3.5 py-1 text-xs font-semibold bg-amber-800 text-white rounded-full hover:bg-amber-900"
             >
-              {isReauthenticating ? '再認証中...' : 'アクセストークンを再取得する'}
+              {isReauthenticating ? '再認証中...' : '再認証する'}
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* メインコンテンツ領域（横幅をフル活用） */}
-      <main className="studio-main">
-        {activeSection === 'dashboard' && <DashboardSection />}
-        {activeSection === 'articles' && <ArticlesSection />}
-        {activeSection === 'notices' && <NoticesSection />}
-        {activeSection === 'inquiries' && <InquiriesSection />}
-        {activeSection === 'applications' && <ApplicationsSection />}
-        {activeSection === 'settings' && <SettingsSection />}
-      </main>
+        <main className="admin-content">
+          {activeSection === 'dashboard' && <DashboardSection />}
+          {activeSection === 'articles' && <ArticlesSection />}
+          {activeSection === 'notices' && <NoticesSection />}
+          {activeSection === 'inquiries' && <InquiriesSection />}
+          {activeSection === 'applications' && <ApplicationsSection />}
+          {activeSection === 'settings' && <SettingsSection />}
+        </main>
 
-      {/* スマホ・タブレット向け フローティングボトムドック */}
-      <nav className="studio-mobile-dock" aria-label="モバイルナビゲーション">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const active = activeSection === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveSection(item.id)}
-              className={`flex flex-col items-center justify-center py-1.5 rounded-2xl text-[10px] transition-all ${
-                active
-                  ? 'bg-blue-50 text-blue-700 font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              <Icon className={`w-4 h-4 mb-0.5 ${active ? 'text-blue-600' : ''}`} />
-              <span className="truncate max-w-full px-0.5">{item.shortLabel}</span>
-            </button>
-          );
-        })}
-      </nav>
+        {/* スマホ用下部フローティングボトムナビゲーション */}
+        <nav className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md rounded-2xl grid grid-cols-6 py-1.5 px-1 shadow-lg">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveSection(item.id)}
+                className={`flex flex-col items-center justify-center py-1 rounded-xl text-[10px] ${
+                  active ? 'text-blue-600 font-bold bg-blue-50' : 'text-slate-500'
+                }`}
+              >
+                <Icon className="w-4 h-4 mb-0.5" />
+                <span className="truncate max-w-full px-0.5">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
@@ -590,15 +595,15 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-md w-full p-7 space-y-5 shadow-md">
         <div className="pb-2 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
-            <Sprout className="w-5 h-5" />
+          <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <CloudSun className="w-6 h-6" />
           </div>
           <div>
             <div className="text-base font-bold text-slate-900">
               Dev Atelier
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              あなた専用の個人開発ワークスペース
+              あなた専用の個人開発スタジオ
             </p>
           </div>
         </div>

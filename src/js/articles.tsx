@@ -746,25 +746,22 @@ export const ArticlesSection: React.FC = () => {
     setMode('list');
   };
 
-  // TanStack Table カラム定義
+  // TanStack Table カラム定義（不要なサイズ・重複パス列を省いてスッキリ表示）
   const columns = useMemo(
     () => [
       columnHelper.accessor('title', {
-        header: 'ファイル名 / パス',
+        header: '記事ファイル',
         cell: (info) => {
           const row = info.row.original;
           return (
-            <div className="flex flex-col">
-              <button
-                type="button"
-                onClick={() => loadArticleDetailMutation.mutate(row.path)}
-                className="text-left font-semibold text-slate-900 hover:text-blue-600 flex items-center gap-1.5"
-              >
-                <FileText className="w-4 h-4 text-slate-500 shrink-0" />
-                <span className="break-all">{row.filename}</span>
-              </button>
-              <span className="text-xs text-slate-500 font-mono mt-0.5 break-all">{row.path}</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => loadArticleDetailMutation.mutate(row.path)}
+              className="text-left font-semibold text-slate-900 hover:text-blue-600 flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+              <span className="break-all">{row.filename}</span>
+            </button>
           );
         }
       }),
@@ -775,21 +772,13 @@ export const ArticlesSection: React.FC = () => {
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="flex items-center gap-1 font-semibold text-slate-700 hover:text-slate-900 whitespace-nowrap"
           >
-            <span>最終更新 (JST)</span>
+            <span>更新日時</span>
             <ArrowUpDown className="w-3.5 h-3.5" />
           </button>
         ),
         cell: (info) => (
-          <span className="text-xs text-slate-600 whitespace-nowrap">
+          <span className="text-xs text-slate-500 whitespace-nowrap">
             {formatDateTimeJst(info.getValue())}
-          </span>
-        )
-      }),
-      columnHelper.accessor('size', {
-        header: 'サイズ',
-        cell: (info) => (
-          <span className="text-xs font-mono text-slate-600 whitespace-nowrap">
-            {(info.getValue() / 1024).toFixed(1)} KB
           </span>
         )
       }),
@@ -799,7 +788,7 @@ export const ArticlesSection: React.FC = () => {
         cell: (info) => {
           const row = info.row.original;
           return (
-            <div className="flex items-center gap-2 text-xs whitespace-nowrap">
+            <div className="flex items-center gap-2.5 text-xs whitespace-nowrap">
               {row.publicUrl && (
                 <a
                   href={row.publicUrl}
@@ -816,7 +805,7 @@ export const ArticlesSection: React.FC = () => {
                   href={row.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 hover:underline"
+                  className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-900 hover:underline"
                 >
                   <span>GitHub</span>
                   <ExternalLink className="w-3 h-3" />
@@ -828,7 +817,7 @@ export const ArticlesSection: React.FC = () => {
       }),
       columnHelper.display({
         id: 'actions',
-        header: '操作',
+        header: '',
         cell: (info) => {
           const row = info.row.original;
           return (
@@ -836,9 +825,9 @@ export const ArticlesSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => loadArticleDetailMutation.mutate(row.path)}
-                className="px-2.5 py-1 text-xs font-medium bg-slate-900 text-white rounded hover:bg-slate-800"
+                className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-full hover:bg-blue-700"
               >
-                編集
+                開く
               </button>
               <button
                 type="button"
@@ -849,8 +838,8 @@ export const ArticlesSection: React.FC = () => {
                     title: row.filename
                   })
                 }
-                className="p-1 text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-red-200"
-                title="記事を削除"
+                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                title="削除"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -921,15 +910,10 @@ export const ArticlesSection: React.FC = () => {
         className="hidden"
       />
 
-      {/* 上部バー：対象GitHubリポジトリ切り替えと操作ボタン */}
-      <div className="bg-white border border-slate-200 rounded-md p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      {/* 上部バー：リポジトリ選択と主要操作のみにスッキリ整理 */}
+      <div className="bg-white rounded-3xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-1.5">
-            <FolderGit2 className="w-4 h-4 text-slate-700 shrink-0" />
-            <label htmlFor="repo-select" className="text-xs font-semibold text-slate-700 whitespace-nowrap">
-              リポジトリ:
-            </label>
-          </div>
+          <FolderGit2 className="w-4 h-4 text-blue-600 shrink-0" />
           <select
             id="repo-select"
             value={selectedRepositoryId}
@@ -938,26 +922,14 @@ export const ArticlesSection: React.FC = () => {
               setTabs([]);
               setMode('list');
             }}
-            className="px-2.5 py-1.5 text-xs sm:text-sm font-medium border border-slate-300 rounded bg-white text-slate-900 max-w-full"
+            className="px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-900 max-w-full"
           >
             {activeRepositories.map((repo) => (
               <option key={repo.id} value={repo.id}>
-                {repo.displayName} ({repo.owner}/{repo.repo})
+                {repo.displayName}
               </option>
             ))}
           </select>
-
-          {currentRepo && (
-            <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 border border-slate-200 rounded font-mono">
-                <GitBranch className="w-3 h-3" />
-                {currentRepo.branch}
-              </span>
-              <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded font-mono">
-                /{currentRepo.articlesDir || '(root)'}
-              </span>
-            </div>
-          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

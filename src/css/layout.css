@@ -1,68 +1,64 @@
 /*
  * src/css/layout.css
- * 大胆な構造刷新：従来の「左固定サイドバー＋四角いヘッダー」という管理画面構造を廃止し、
- * 画面上部の「フローティング・ピル型ナビゲーションバー」＋広々としたキャンバスで構成します。
- * スマホ（768px以下）でも横はみ出しゼロ＆下部フローティングドックで快適に操作できます。
+ * ユーザー好みの「左サイドバーレイアウト」を、枠線のない明るく可愛いパステル調で再設計。
+ * スマホ時はドロワーメニュー＋下部ボトムナビで崩れを完全に防止します。
  */
 
-.studio-shell {
+.admin-shell {
+  display: flex;
   min-height: 100vh;
   width: 100%;
-  display: flex;
-  flex-direction: column;
   position: relative;
 }
 
-/* PC・タブレット向け：上部に浮かぶフローティングナビゲーション */
-.studio-topbar-wrap {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  padding: 14px 24px 8px;
-  background: linear-gradient(180deg, rgba(243, 241, 234, 0.96) 70%, rgba(243, 241, 234, 0) 100%);
-  pointer-events: none;
+/* 左サイドバー：明るく優しいパウダーブルー＆クリームのフローティングパネル */
+.admin-sidebar {
+  width: 236px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(239, 246, 255, 0.92) 100%);
+  backdrop-filter: blur(14px);
+  color: #222834;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 6px 0 28px -10px rgba(59, 120, 231, 0.12);
+  z-index: 40;
 }
 
-.studio-topbar {
-  max-width: 1440px;
-  margin: 0 auto;
-  background-color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  border-radius: 9999px;
-  padding: 8px 14px;
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+}
+
+.admin-header {
+  min-height: 58px;
+  background-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  box-shadow: 0 8px 28px -6px rgba(45, 40, 30, 0.1), 0 2px 6px rgba(45, 40, 30, 0.04);
-  pointer-events: auto;
+  padding: 10px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
-.studio-nav-pills {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background-color: #f3f1ea;
-  padding: 4px;
-  border-radius: 9999px;
-}
-
-/* メインキャンバス（サイドバーがないため横幅をフル活用） */
-.studio-main {
+.admin-content {
   flex: 1;
+  padding: 20px 26px 40px;
+  max-width: 1480px;
   width: 100%;
-  max-width: 1440px;
   margin: 0 auto;
-  padding: 14px 24px 48px;
-  min-width: 0;
 }
 
-/* 記事エディタの2カラム分割レイアウト（PCでは左右並列、タブレット・スマホでは縦並び） */
+/* 記事エディタの2カラム分割レイアウト */
 .editor-split-pane {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
-  min-height: 600px;
+  min-height: 580px;
 }
 
 @media (max-width: 1024px) {
@@ -70,43 +66,32 @@
     grid-template-columns: 1fr;
     min-height: auto;
   }
-
-  .studio-nav-pills {
-    display: none;
-  }
 }
 
-/* スマホ向けフローティングボトムドック（768px / 1024px以下） */
-.studio-mobile-dock {
-  display: none;
-}
-
-@media (max-width: 1024px) {
-  .studio-topbar-wrap {
-    padding: 10px 12px 6px;
-  }
-
-  .studio-topbar {
-    padding: 8px 12px;
-  }
-
-  .studio-main {
-    padding: 10px 12px 92px;
-  }
-
-  .studio-mobile-dock {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+/* スマホ・小型タブレット（768px以下）向けドロワー＆ボトムナビ */
+@media (max-width: 768px) {
+  .admin-sidebar {
     position: fixed;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    z-index: 35;
-    background-color: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(18px);
-    border-radius: 1.5rem;
-    padding: 6px 4px;
-    box-shadow: 0 10px 32px -4px rgba(33, 31, 27, 0.16), 0 2px 8px rgba(33, 31, 27, 0.06);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    max-width: 82vw;
+    border-radius: 0 1.75rem 1.75rem 0;
+    transform: translateX(-105%);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .admin-header {
+    padding: 8px 14px;
+  }
+
+  .admin-content {
+    padding: 14px 12px 86px;
   }
 
   .cm-editor-container .cm-editor {

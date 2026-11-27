@@ -2,79 +2,73 @@
 
 /*
  * src/css/style.css
- * 枠線（border）によるAIっぽい無機質な囲みを排除し、
- * オートミールクリーム(#f3f1ea) × ピュアホワイト(#ffffff) × セージグリーン(#2f6f5e) × ハニーアンバー(#d97706)
- * の「面と余白」で構成する、温かみのあるボタニカル・クラフトスタイル。
- * ピンク系統の色は一切使用しません。
+ * ピンク系統を一切使わず、明るく可愛らしい「ひだまりバタークリーム × パウダースカイブルー × ミント」の配色。
+ * 枠線（border）によるAIっぽい囲みを排し、ふんわりとした丸みと柔らかな影で構成します。
  */
 
 @theme {
-  /* 無機質なグレーを、温かみのあるオートミール・リネン・ウォームチャコールへ変換 */
-  --color-slate-50: #f9f8f4;
-  --color-slate-100: #f0ede4;
-  --color-slate-200: #e6e2d6;
-  --color-slate-300: #d5cfc0;
-  --color-slate-400: #9e9788;
-  --color-slate-500: #756f63;
-  --color-slate-600: #595449;
-  --color-slate-700: #423e36;
-  --color-slate-800: #302d27;
-  --color-slate-900: #211f1b;
-  --color-slate-950: #171512;
+  /* 温かみのあるミルキーホワイト〜柔らかいブルーグレー */
+  --color-slate-50: #fafbfd;
+  --color-slate-100: #f1f4f9;
+  --color-slate-200: #e6ecf5;
+  --color-slate-300: #d5dfed;
+  --color-slate-400: #9aa7bd;
+  --color-slate-500: #728099;
+  --color-slate-600: #556178;
+  --color-slate-700: #3f495c;
+  --color-slate-800: #2e3645;
+  --color-slate-900: #222834;
+  --color-slate-950: #181c24;
 
-  /* プライマリアクセントを「深みのあるセージ・フォレストグリーン」へ変換（ピンク系ゼロ） */
-  --color-blue-50: #eef6f3;
-  --color-blue-100: #d8ebe4;
-  --color-blue-200: #b3d8cb;
-  --color-blue-300: #82bfab;
-  --color-blue-400: #52a289;
-  --color-blue-500: #36876f;
-  --color-blue-600: #2b6e5a;
-  --color-blue-700: #235849;
-  --color-blue-800: #1d473b;
-  --color-blue-900: #183b31;
+  /* メインアクセント：可愛らしいコーンフラワーブルー / スカイブルー */
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #4a8df8;
+  --color-blue-600: #3b78e7;
+  --color-blue-700: #2b62cc;
+  --color-blue-800: #234fa6;
+  --color-blue-900: #1e428a;
 
-  /* ステータスカラー（ミント・ハニーマスタード・テラコッタ） */
-  --color-emerald-50: #edf7f1;
-  --color-emerald-100: #d4eedf;
-  --color-emerald-300: #8fd1ad;
-  --color-emerald-700: #23704b;
-  --color-emerald-800: #1c593c;
-  --color-emerald-900: #174730;
+  /* サブカラー：ミントグリーン & ハニーイエロー & ソフトコーラルオレンジ */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-700: #15805d;
+  --color-emerald-800: #11664a;
+  --color-emerald-900: #0e523b;
 
-  --color-amber-50: #fef8ec;
-  --color-amber-100: #fdedcb;
-  --color-amber-300: #f7cd76;
-  --color-amber-700: #b06506;
-  --color-amber-800: #8c5008;
-  --color-amber-900: #704008;
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-300: #fcd34d;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
 
-  --color-red-50: #fdf1ee;
-  --color-red-100: #fae0d9;
-  --color-red-200: #f5bfb0;
-  --color-red-300: #eb9680;
-  --color-red-600: #c94a32;
-  --color-red-700: #a83924;
-  --color-red-800: #872d1d;
-  --color-red-900: #6b2417;
+  --color-red-50: #fff5f2;
+  --color-red-100: #ffe4dc;
+  --color-red-200: #fecbc0;
+  --color-red-300: #fca595;
+  --color-red-600: #e0523c;
+  --color-red-700: #c03d29;
+  --color-red-800: #9c3020;
+  --color-red-900: #7d271a;
 
-  /* 大きめの有機的な角丸 */
+  /* ぷっくり丸い角丸 */
   --radius-xs: 0.6rem;
   --radius-sm: 0.85rem;
   --radius: 1.1rem;
   --radius-md: 1.35rem;
-  --radius-lg: 1.6rem;
+  --radius-lg: 1.65rem;
   --radius-xl: 2rem;
 }
 
 :root {
-  --bg-canvas: #f3f1ea;
+  --bg-canvas: #f8f9fc;
   --bg-surface: #ffffff;
-  --bg-muted: #ebe7dc;
-  --text-primary: #211f1b;
-  --text-secondary: #595449;
-  --text-muted: #756f63;
-  --accent-sage: #2b6e5a;
+  --text-primary: #222834;
 }
 
 * {
@@ -86,6 +80,11 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-canvas);
+  background-image:
+    radial-gradient(circle at 18% 10%, rgba(219, 234, 254, 0.55) 0%, transparent 42%),
+    radial-gradient(circle at 88% 18%, rgba(254, 243, 199, 0.5) 0%, transparent 40%),
+    radial-gradient(circle at 72% 88%, rgba(209, 250, 229, 0.45) 0%, transparent 42%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family:
     "Hiragino Maru Gothic ProN",
@@ -96,7 +95,7 @@ body {
     "Segoe UI",
     sans-serif;
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -107,43 +106,35 @@ pre,
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* =========================================================
-   「AIっぽい枠線だらけのデザイン」を排し、面と影で階層を作る
-   ========================================================= */
-
-/* 白いカードコンテナ：枠線を消し、柔らかな浮遊感のシャドウと大きな角丸に統一 */
+/* 枠線（border）による無機質な囲みをなくし、白い面＋ふんわりした影で立体感を出す */
 .bg-white.border,
 .bg-white.border-slate-200,
 .bg-white.border-slate-300 {
   border-color: transparent !important;
-  box-shadow: 0 2px 14px -3px rgba(45, 40, 30, 0.06), 0 1px 3px rgba(45, 40, 30, 0.03);
+  box-shadow: 0 4px 20px -4px rgba(59, 120, 231, 0.08), 0 1px 4px rgba(34, 40, 52, 0.04);
 }
 
-/* 薄いサブカード（bg-slate-50）も枠線ではなく自然な面の色差で表現 */
 .bg-slate-50.border {
   border-color: transparent !important;
-  background-color: #f6f4ed;
+  background-color: #f3f6fb;
 }
 
-/* 区切り線（border-b / border-t / divide-y）を主張しない極薄のトーンへ */
 .border-slate-200,
 .border-slate-100,
 .divide-slate-200 > :not(:last-child) {
-  border-color: rgba(117, 111, 99, 0.12) !important;
+  border-color: rgba(114, 128, 153, 0.1) !important;
 }
 
-/* ボタン：ピル型＆滑らかなフィードバック */
 button {
   border-radius: 9999px;
-  transition: background-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease, color 0.16s ease;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
 }
 
 button:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
-/* 入力欄：枠線ではなく「淡いリネンベージュの面」で表現（モダンノートアプリ風） */
 input[type="text"],
 input[type="url"],
 input[type="email"],
@@ -151,11 +142,11 @@ input[type="date"],
 input[type="datetime-local"],
 select,
 textarea {
-  background-color: #f3f1ea !important;
+  background-color: #f1f5fb !important;
   border: 1.5px solid transparent !important;
-  border-radius: 0.9rem;
-  color: #211f1b;
-  transition: background-color 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  border-radius: 0.95rem;
+  color: #222834;
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 input[type="text"]:focus,
@@ -167,8 +158,8 @@ select:focus,
 textarea:focus {
   outline: none;
   background-color: #ffffff !important;
-  border-color: #36876f !important;
-  box-shadow: 0 0 0 3px rgba(54, 135, 111, 0.15);
+  border-color: #4a8df8 !important;
+  box-shadow: 0 0 0 3px rgba(74, 141, 248, 0.18);
 }
 
 input:disabled {

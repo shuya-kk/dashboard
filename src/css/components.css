@@ -1,16 +1,15 @@
 /*
  * src/css/components.css
- * テーブル、フォーム、Markdownプレビュー、CodeMirrorエディタのボーダーレス＆クラフトスタイル。
+ * スッキリして温かみのあるテーブル・Markdownプレビュー・CodeMirrorスタイル（枠線・ピンクなし）。
  */
 
-/* テーブルの枠線をなくし、ゆったりとした行間とホバーの面変化だけで見やすく */
 table thead tr {
-  background-color: #f7f5ef !important;
+  background-color: #f4f7fc !important;
 }
 
 table th,
 table td {
-  border-color: rgba(117, 111, 99, 0.1) !important;
+  border-color: rgba(114, 128, 153, 0.08) !important;
 }
 
 table tbody tr {
@@ -18,40 +17,38 @@ table tbody tr {
 }
 
 table tbody tr:hover {
-  background-color: #f9f8f3 !important;
+  background-color: #f8fbff !important;
 }
 
-/* Markdown プレビュー領域のタイポグラフィ */
+/* Markdown プレビュー領域 */
 .markdown-preview-body {
-  color: #211f1b;
+  color: #222834;
   line-height: 1.85;
   font-size: 14.5px;
   word-break: break-word;
 }
 
 .markdown-preview-body h1 {
-  font-size: 1.6rem;
+  font-size: 1.55rem;
   font-weight: 700;
-  margin: 1.25rem 0 0.75rem;
+  margin: 1.2rem 0 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 2px solid #d8ebe4;
-  color: #211f1b;
+  border-bottom: 2px solid #dbeafe;
 }
 
 .markdown-preview-body h2 {
-  font-size: 1.3rem;
+  font-size: 1.28rem;
   font-weight: 700;
-  margin: 1.15rem 0 0.6rem;
+  margin: 1.1rem 0 0.6rem;
   padding-left: 0.7rem;
-  border-left: 4px solid #2b6e5a;
-  color: #302d27;
+  border-left: 4px solid #4a8df8;
 }
 
 .markdown-preview-body h3 {
-  font-size: 1.12rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
-  color: #423e36;
+  color: #3f495c;
 }
 
 .markdown-preview-body p {
@@ -71,17 +68,17 @@ table tbody tr:hover {
 }
 
 .markdown-preview-body blockquote {
-  border-left: 4px solid #82bfab;
-  background-color: #f4f8f6;
+  border-left: 4px solid #93c5fd;
+  background-color: #f4f8ff;
   padding: 0.65rem 1rem;
-  border-radius: 0 0.85rem 0.85rem 0;
+  border-radius: 0 0.9rem 0.9rem 0;
   margin: 0.85rem 0;
-  color: #423e36;
+  color: #3f495c;
 }
 
 .markdown-preview-body pre {
-  background-color: #211f1b;
-  color: #f9f8f4;
+  background-color: #222834;
+  color: #f8f9fc;
   padding: 1rem 1.15rem;
   border-radius: 1rem;
   overflow-x: auto;
@@ -90,8 +87,8 @@ table tbody tr:hover {
 }
 
 .markdown-preview-body code {
-  background-color: #eef6f3;
-  color: #235849;
+  background-color: #eff6ff;
+  color: #2b62cc;
   padding: 0.15rem 0.45rem;
   border-radius: 0.45rem;
   font-size: 0.9em;
@@ -114,24 +111,24 @@ table tbody tr:hover {
 
 .markdown-preview-body th,
 .markdown-preview-body td {
-  border: 1px solid #e6e2d6;
+  border: 1px solid #e6ecf5;
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
 
 .markdown-preview-body th {
-  background-color: #f3f1ea;
+  background-color: #f1f5fb;
   font-weight: 600;
 }
 
 .markdown-preview-body hr {
   border: none;
-  border-top: 2px solid #e6e2d6;
+  border-top: 2px dashed #dbeafe;
   margin: 1.4rem 0;
 }
 
 .markdown-preview-body a {
-  color: #2b6e5a;
+  color: #3b78e7;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -141,10 +138,10 @@ table tbody tr:hover {
   height: auto;
   border-radius: 1rem;
   margin: 0.6rem 0;
-  box-shadow: 0 4px 12px rgba(33, 31, 27, 0.08);
+  box-shadow: 0 4px 12px rgba(34, 40, 52, 0.08);
 }
 
-/* CodeMirror 6 コンテナ調整 */
+/* CodeMirror 6 */
 .cm-editor-container .cm-editor {
   height: 100%;
   min-height: 540px;
@@ -153,13 +150,13 @@ table tbody tr:hover {
 }
 
 .cm-editor-container .cm-gutters {
-  background-color: #f9f8f4 !important;
+  background-color: #fafbfd !important;
   border-right: none !important;
-  color: #9e9788 !important;
+  color: #9aa7bd !important;
 }
 
 .cm-editor-container .cm-activeLine {
-  background-color: rgba(216, 235, 228, 0.35) !important;
+  background-color: rgba(219, 234, 254, 0.35) !important;
 }
 
 .cm-editor-container .cm-scroller {
