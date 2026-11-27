@@ -2,81 +2,79 @@
 
 /*
  * src/css/style.css
- * 無機質な業務用管理画面から脱却し、温かみのあるミルクティーベージュ＆パステルコーラル・ラベンダーを基調とした
- * 毎日楽しく使える「個人開発クリエイターのアトリエ」風テーマ。
- * Tailwind の既存の slate / blue / emerald クラスも CSS 変数オーバーライドによって
- * すべて柔らかく可愛らしいトーン＆丸みのあるUIへと統一変換します。
+ * 枠線（border）によるAIっぽい無機質な囲みを排除し、
+ * オートミールクリーム(#f3f1ea) × ピュアホワイト(#ffffff) × セージグリーン(#2f6f5e) × ハニーアンバー(#d97706)
+ * の「面と余白」で構成する、温かみのあるボタニカル・クラフトスタイル。
+ * ピンク系統の色は一切使用しません。
  */
 
 @theme {
-  /* 無機質なグレー(slate)を、温かみのあるココア＆ミルクラテ系の柔らかい色調に変換 */
-  --color-slate-50: #fdf8f5;
-  --color-slate-100: #f7efe9;
-  --color-slate-200: #efe2d9;
-  --color-slate-300: #e2cfc2;
-  --color-slate-400: #b89f91;
-  --color-slate-500: #8c7365;
-  --color-slate-600: #6e5649;
-  --color-slate-700: #543f34;
-  --color-slate-800: #423027;
-  --color-slate-900: #36261e;
-  --color-slate-950: #261a14;
+  /* 無機質なグレーを、温かみのあるオートミール・リネン・ウォームチャコールへ変換 */
+  --color-slate-50: #f9f8f4;
+  --color-slate-100: #f0ede4;
+  --color-slate-200: #e6e2d6;
+  --color-slate-300: #d5cfc0;
+  --color-slate-400: #9e9788;
+  --color-slate-500: #756f63;
+  --color-slate-600: #595449;
+  --color-slate-700: #423e36;
+  --color-slate-800: #302d27;
+  --color-slate-900: #211f1b;
+  --color-slate-950: #171512;
 
-  /* 事務的な青(blue)を、可愛らしいベリーピンク＆コーラルローズ系に変換 */
-  --color-blue-50: #fff1f5;
-  --color-blue-100: #ffe3ec;
-  --color-blue-200: #ffc9da;
-  --color-blue-300: #ff9ebb;
-  --color-blue-400: #fb719b;
-  --color-blue-500: #f25287;
-  --color-blue-600: #e33b73;
-  --color-blue-700: #c7285d;
-  --color-blue-800: #a6224e;
-  --color-blue-900: #8a1f44;
+  /* プライマリアクセントを「深みのあるセージ・フォレストグリーン」へ変換（ピンク系ゼロ） */
+  --color-blue-50: #eef6f3;
+  --color-blue-100: #d8ebe4;
+  --color-blue-200: #b3d8cb;
+  --color-blue-300: #82bfab;
+  --color-blue-400: #52a289;
+  --color-blue-500: #36876f;
+  --color-blue-600: #2b6e5a;
+  --color-blue-700: #235849;
+  --color-blue-800: #1d473b;
+  --color-blue-900: #183b31;
 
-  /* エメラルド・アンバー・レッドもパステル調で目に優しいトーンに調整 */
-  --color-emerald-50: #eefcf5;
-  --color-emerald-100: #d5f7e6;
-  --color-emerald-300: #8ce3ba;
-  --color-emerald-700: #1e8758;
-  --color-emerald-800: #186b46;
-  --color-emerald-900: #145739;
+  /* ステータスカラー（ミント・ハニーマスタード・テラコッタ） */
+  --color-emerald-50: #edf7f1;
+  --color-emerald-100: #d4eedf;
+  --color-emerald-300: #8fd1ad;
+  --color-emerald-700: #23704b;
+  --color-emerald-800: #1c593c;
+  --color-emerald-900: #174730;
 
-  --color-amber-50: #fff9eb;
-  --color-amber-100: #ffefc7;
-  --color-amber-300: #ffd470;
-  --color-amber-700: #b86e00;
-  --color-amber-800: #945700;
-  --color-amber-900: #784600;
+  --color-amber-50: #fef8ec;
+  --color-amber-100: #fdedcb;
+  --color-amber-300: #f7cd76;
+  --color-amber-700: #b06506;
+  --color-amber-800: #8c5008;
+  --color-amber-900: #704008;
 
-  --color-red-50: #fff2f2;
-  --color-red-100: #ffe0e0;
-  --color-red-200: #ffc4c4;
-  --color-red-300: #ff9c9c;
-  --color-red-600: #e04848;
-  --color-red-700: #c23434;
-  --color-red-800: #9e2828;
-  --color-red-900: #822020;
+  --color-red-50: #fdf1ee;
+  --color-red-100: #fae0d9;
+  --color-red-200: #f5bfb0;
+  --color-red-300: #eb9680;
+  --color-red-600: #c94a32;
+  --color-red-700: #a83924;
+  --color-red-800: #872d1d;
+  --color-red-900: #6b2417;
 
-  /* 角丸を全体的にぷっくりと可愛く丸める */
-  --radius-xs: 0.5rem;
-  --radius-sm: 0.65rem;
-  --radius: 0.85rem;
-  --radius-md: 1.15rem;
-  --radius-lg: 1.35rem;
-  --radius-xl: 1.65rem;
+  /* 大きめの有機的な角丸 */
+  --radius-xs: 0.6rem;
+  --radius-sm: 0.85rem;
+  --radius: 1.1rem;
+  --radius-md: 1.35rem;
+  --radius-lg: 1.6rem;
+  --radius-xl: 2rem;
 }
 
 :root {
-  --bg-canvas: #fdf8f5;
+  --bg-canvas: #f3f1ea;
   --bg-surface: #ffffff;
-  --bg-muted: #f7efe9;
-  --border-default: #efe2d9;
-  --border-strong: #e2cfc2;
-  --text-primary: #36261e;
-  --text-secondary: #543f34;
-  --text-muted: #8c7365;
-  --accent-primary: #e33b73;
+  --bg-muted: #ebe7dc;
+  --text-primary: #211f1b;
+  --text-secondary: #595449;
+  --text-muted: #756f63;
+  --accent-sage: #2b6e5a;
 }
 
 * {
@@ -88,15 +86,9 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-canvas);
-  background-image:
-    radial-gradient(circle at 12% 8%, rgba(255, 214, 229, 0.38) 0%, transparent 38%),
-    radial-gradient(circle at 88% 15%, rgba(226, 212, 255, 0.35) 0%, transparent 40%),
-    radial-gradient(circle at 50% 92%, rgba(255, 234, 209, 0.4) 0%, transparent 45%);
-  background-attachment: fixed;
   color: var(--text-primary);
   font-family:
     "Hiragino Maru Gothic ProN",
-    "Quicksand",
     "M PLUS Rounded 1c",
     "Hiragino Sans",
     -apple-system,
@@ -104,8 +96,9 @@ body {
     "Segoe UI",
     sans-serif;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 code,
@@ -114,10 +107,35 @@ pre,
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* ボタンや入力欄にふんわりとした丸みと優しいトランジションを付与 */
+/* =========================================================
+   「AIっぽい枠線だらけのデザイン」を排し、面と影で階層を作る
+   ========================================================= */
+
+/* 白いカードコンテナ：枠線を消し、柔らかな浮遊感のシャドウと大きな角丸に統一 */
+.bg-white.border,
+.bg-white.border-slate-200,
+.bg-white.border-slate-300 {
+  border-color: transparent !important;
+  box-shadow: 0 2px 14px -3px rgba(45, 40, 30, 0.06), 0 1px 3px rgba(45, 40, 30, 0.03);
+}
+
+/* 薄いサブカード（bg-slate-50）も枠線ではなく自然な面の色差で表現 */
+.bg-slate-50.border {
+  border-color: transparent !important;
+  background-color: #f6f4ed;
+}
+
+/* 区切り線（border-b / border-t / divide-y）を主張しない極薄のトーンへ */
+.border-slate-200,
+.border-slate-100,
+.divide-slate-200 > :not(:last-child) {
+  border-color: rgba(117, 111, 99, 0.12) !important;
+}
+
+/* ボタン：ピル型＆滑らかなフィードバック */
 button {
   border-radius: 9999px;
-  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease, color 0.16s ease;
   cursor: pointer;
 }
 
@@ -125,6 +143,7 @@ button:active:not(:disabled) {
   transform: scale(0.97);
 }
 
+/* 入力欄：枠線ではなく「淡いリネンベージュの面」で表現（モダンノートアプリ風） */
 input[type="text"],
 input[type="url"],
 input[type="email"],
@@ -132,8 +151,11 @@ input[type="date"],
 input[type="datetime-local"],
 select,
 textarea {
-  border-radius: 0.85rem;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  background-color: #f3f1ea !important;
+  border: 1.5px solid transparent !important;
+  border-radius: 0.9rem;
+  color: #211f1b;
+  transition: background-color 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 
 input[type="text"]:focus,
@@ -144,11 +166,12 @@ input[type="datetime-local"]:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #f25287;
-  box-shadow: 0 0 0 3px rgba(242, 82, 135, 0.16);
+  background-color: #ffffff !important;
+  border-color: #36876f !important;
+  box-shadow: 0 0 0 3px rgba(54, 135, 111, 0.15);
 }
 
-/* カード（bg-white + border）に柔らかいドロップシャドウを付与 */
-.bg-white.border {
-  box-shadow: 0 6px 20px -6px rgba(110, 86, 73, 0.08), 0 2px 6px -2px rgba(110, 86, 73, 0.04);
+input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
