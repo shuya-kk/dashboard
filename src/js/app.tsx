@@ -19,12 +19,13 @@ import {
   AppWindow,
   Settings,
   LogOut,
-  ShieldCheck,
   RefreshCw,
   AlertTriangle,
   X,
   Sliders,
-  Menu
+  Menu,
+  Sparkles,
+  Heart
 } from 'lucide-react';
 import { useAppStore } from './store';
 import {
@@ -60,13 +61,19 @@ const queryClient = new QueryClient({
   }
 });
 
-const NAV_ITEMS: Array<{ id: SectionId; label: string; subLabel: string; icon: React.ComponentType<{ className?: string }> }> = [
-  { id: 'dashboard', label: 'Dashboard', subLabel: '全体状況', icon: LayoutDashboard },
-  { id: 'articles', label: 'Articles', subLabel: 'GitHub記事管理', icon: FileText },
-  { id: 'notices', label: 'Notices', subLabel: 'お知らせ管理', icon: Bell },
-  { id: 'inquiries', label: 'Inquiries', subLabel: 'お問い合わせ管理', icon: Inbox },
-  { id: 'applications', label: 'Applications', subLabel: 'アプリ管理', icon: AppWindow },
-  { id: 'settings', label: 'Settings', subLabel: 'リポジトリ・設定', icon: Settings }
+const NAV_ITEMS: Array<{
+  id: SectionId;
+  label: string;
+  subLabel: string;
+  badgeColor: string;
+  icon: React.ComponentType<{ className?: string }>;
+}> = [
+  { id: 'dashboard', label: 'ホーム', subLabel: '全体のようす', badgeColor: 'bg-pink-100 text-pink-600', icon: LayoutDashboard },
+  { id: 'articles', label: '記事ノート', subLabel: 'Markdown執筆', badgeColor: 'bg-purple-100 text-purple-600', icon: FileText },
+  { id: 'notices', label: 'お知らせ', subLabel: 'アプリ内ニュース', badgeColor: 'bg-amber-100 text-amber-600', icon: Bell },
+  { id: 'inquiries', label: 'おたより', subLabel: 'お問い合わせ箱', badgeColor: 'bg-sky-100 text-sky-600', icon: Inbox },
+  { id: 'applications', label: 'マイアプリ', subLabel: 'App Store連携', badgeColor: 'bg-emerald-100 text-emerald-600', icon: AppWindow },
+  { id: 'settings', label: 'アトリエ設定', subLabel: 'リポジトリ・テンプレ', badgeColor: 'bg-rose-100 text-rose-600', icon: Settings }
 ];
 
 export const AdminDashboardApp: React.FC = () => {
@@ -184,29 +191,34 @@ const AdminShell: React.FC = () => {
         />
       )}
 
-      {/* サイドバーナビゲーション（PCでは常時表示、スマホではスライドドロワー） */}
+      {/* サイドバーナビゲーション（明るく可愛いパステル・クリエイタースタジオ風） */}
       <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-bold text-white">
-              <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0" />
-              <span>個人開発 統合管理</span>
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-white shadow-xs shrink-0">
+              <Sparkles className="w-5 h-5" />
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5 font-mono truncate">
-              GitHub Pages + GAS + Sheets
+            <div>
+              <div className="text-sm font-bold text-slate-900 tracking-tight">
+                My Creator Studio
+              </div>
+              <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
+                <span>個人開発のアトリエ</span>
+              </div>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden p-1 text-slate-400 hover:text-white"
+            className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 bg-white rounded-full border border-slate-200"
             aria-label="メニューを閉じる"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 p-2.5 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = activeSection === item.id;
@@ -218,17 +230,23 @@ const AdminShell: React.FC = () => {
                   setActiveSection(item.id);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded text-left transition-colors ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-left transition-all ${
                   active
-                    ? 'bg-blue-600 text-white font-semibold'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-white text-slate-900 font-bold shadow-sm border border-pink-200'
+                    : 'text-slate-700 hover:bg-white/70 hover:text-slate-900 border border-transparent'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <Icon className="w-4 h-4 shrink-0" />
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform ${
+                      active ? 'bg-blue-600 text-white scale-105 shadow-2xs' : item.badgeColor
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
                   <div>
                     <div className="text-xs leading-tight">{item.label}</div>
-                    <div className={`text-[10px] ${active ? 'text-blue-100' : 'text-slate-400'}`}>
+                    <div className={`text-[10px] mt-0.5 ${active ? 'text-blue-600 font-medium' : 'text-slate-500'}`}>
                       {item.subLabel}
                     </div>
                   </div>
@@ -238,15 +256,30 @@ const AdminShell: React.FC = () => {
           })}
         </nav>
 
-        <div className="p-3 border-t border-slate-800 space-y-2 text-xs">
-          <div className="text-slate-400 truncate" title={authUser.email}>
-            <span className="block text-[10px] text-slate-500">認証済み管理者</span>
-            <span className="font-mono text-slate-200">{authUser.email}</span>
+        <div className="p-3.5 m-2.5 rounded-2xl bg-white/90 border border-slate-200 space-y-2.5 text-xs shadow-2xs">
+          <div className="flex items-center gap-2">
+            {authUser.picture ? (
+              <img
+                src={authUser.picture}
+                alt=""
+                className="w-7 h-7 rounded-full border border-pink-200 shrink-0"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-pink-100 text-pink-600 font-bold flex items-center justify-center shrink-0">
+                {authUser.email.slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1" title={authUser.email}>
+              <span className="block text-[10px] text-slate-500">ログイン中</span>
+              <span className="font-mono text-[11px] font-semibold text-slate-800 truncate block">
+                {authUser.email}
+              </span>
+            </div>
           </div>
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700"
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-pink-50 hover:text-blue-700 rounded-full border border-slate-200"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>ログアウト</span>
@@ -579,16 +612,20 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-300 rounded-md max-w-md w-full p-6 space-y-5 shadow-xs">
-        <div className="border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <ShieldCheck className="w-5 h-5 text-slate-800" />
-            <span>個人開発者向け統合管理システム</span>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl max-w-md w-full p-7 space-y-5 shadow-md">
+        <div className="border-b border-slate-200 pb-4 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-white shadow-xs shrink-0">
+            <Sparkles className="w-6 h-6" />
           </div>
-          <p className="text-xs text-slate-600 mt-1">
-            この管理画面は許可されたGoogleアカウント1名のみが利用できます。未認証状態では管理機能は表示されません。
-          </p>
+          <div>
+            <div className="text-base font-bold text-slate-900">
+              My Creator Studio
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              あなた専用の個人開発アトリエへようこそ
+            </p>
+          </div>
         </div>
 
         {authError && (
