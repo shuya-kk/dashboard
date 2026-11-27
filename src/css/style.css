@@ -2,65 +2,68 @@
 
 /*
  * src/css/style.css
- * 革新的デザインコンセプト：「Frost Glass & Soft Clay Studio」
- * 枠線（border）を完全に排除し、オーロラパステル（ピーチピンク・ラベンダー・スカイ・ミント）のキャンバス上に
- * すりガラス（backdrop-filter）と、内側に光沢を持つぷっくりしたクレイ（粘土）質感のUIを浮かべます。
+ * チープな虹色グラデーション・強いシャドウ・過剰な角丸（文字見切れの原因）を完全に撤廃し、
+ * 上質な紙のようなシルクニュートラル（#f5f4f7）× 純白（#ffffff）× 品のあるモーヴローズ（#c24172）で構成した
+ * 洗練されたモダンスタジオデザイン。
  */
 
 @theme {
-  --color-slate-50: #fdfbfe;
-  --color-slate-100: #f4eff8;
-  --color-slate-200: #eae2f0;
-  --color-slate-300: #d8cce3;
-  --color-slate-400: #9f92ad;
-  --color-slate-500: #776a85;
-  --color-slate-600: #594d66;
-  --color-slate-700: #42374d;
-  --color-slate-800: #31273b;
-  --color-slate-900: #241c2b;
-  --color-slate-950: #18121d;
+  --color-slate-50: #faf9fb;
+  --color-slate-100: #f2f0f5;
+  --color-slate-200: #e7e4ec;
+  --color-slate-300: #d5d0dd;
+  --color-slate-400: #9992a6;
+  --color-slate-500: #70697d;
+  --color-slate-600: #524c5e;
+  --color-slate-700: #3c3747;
+  --color-slate-800: #2b2733;
+  --color-slate-900: #1c1922;
+  --color-slate-950: #121017;
 
-  /* メインアクセント：鮮やかなローズベリー×ラベンダーピンク */
-  --color-blue-50: #fff0f6;
-  --color-blue-100: #ffe0ee;
-  --color-blue-200: #ffc2dc;
-  --color-blue-300: #ff94c2;
-  --color-blue-400: #f768a8;
-  --color-blue-500: #eb4791;
-  --color-blue-600: #d62f7b;
-  --color-blue-700: #b52164;
-  --color-blue-800: #941b52;
-  --color-blue-900: #7a1844;
+  /* 落ち着いた品のあるモーヴローズ・ダスティピンク */
+  --color-blue-50: #fdf2f6;
+  --color-blue-100: #fbe4ed;
+  --color-blue-200: #f6cadb;
+  --color-blue-300: #eea3c0;
+  --color-blue-400: #df6c99;
+  --color-blue-500: #cf4c7f;
+  --color-blue-600: #b8386a;
+  --color-blue-700: #992a55;
+  --color-blue-800: #7d2346;
+  --color-blue-900: #661e3b;
 
-  --color-emerald-50: #edfcf6;
-  --color-emerald-100: #d3f7e8;
-  --color-emerald-300: #7ce3ba;
-  --color-emerald-700: #188259;
-  --color-emerald-800: #136646;
-  --color-emerald-900: #0f5238;
+  --color-emerald-50: #effaf5;
+  --color-emerald-100: #d9f3e7;
+  --color-emerald-300: #8bd4b3;
+  --color-emerald-700: #1a744e;
+  --color-emerald-800: #155c3e;
+  --color-emerald-900: #114a32;
 
-  --color-amber-50: #fff8eb;
-  --color-amber-100: #ffedc7;
-  --color-amber-300: #ffd070;
-  --color-amber-700: #b56800;
-  --color-amber-800: #8f5200;
-  --color-amber-900: #734200;
+  --color-amber-50: #fef9ec;
+  --color-amber-100: #fcedcc;
+  --color-amber-300: #f5ce78;
+  --color-amber-700: #a66005;
+  --color-amber-800: #854d06;
+  --color-amber-900: #6b3e06;
 
-  --color-red-50: #fff1f2;
-  --color-red-100: #ffe0e3;
-  --color-red-200: #fec2c8;
-  --color-red-300: #fd96a1;
-  --color-red-600: #e03e52;
-  --color-red-700: #bd2b3e;
-  --color-red-800: #992232;
-  --color-red-900: #7d1c29;
+  --color-red-50: #fef2f2;
+  --color-red-100: #fde2e2;
+  --color-red-200: #fac5c5;
+  --color-red-300: #f59a9a;
+  --color-red-600: #cc3b3b;
+  --color-red-700: #ab2b2b;
+  --color-red-800: #8a2323;
+  --color-red-900: #701d1d;
 
-  --radius-xs: 0.7rem;
-  --radius-sm: 0.95rem;
-  --radius: 1.25rem;
-  --radius-md: 1.5rem;
-  --radius-lg: 1.85rem;
-  --radius-xl: 2.25rem;
+  /* 文字見切れを防ぐ、端正で適切な角丸スケール */
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius: 0.625rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.25rem;
 }
 
 * {
@@ -71,21 +74,13 @@ html,
 body {
   margin: 0;
   padding: 0;
-  color: #241c2b;
-  /* 革新的なオーロラパステルメッシュ背景 */
-  background-color: #f8eff7;
-  background-image:
-    radial-gradient(at 8% 12%, rgba(255, 198, 224, 0.72) 0px, transparent 48%),
-    radial-gradient(at 88% 8%, rgba(199, 218, 255, 0.75) 0px, transparent 46%),
-    radial-gradient(at 85% 88%, rgba(255, 223, 194, 0.65) 0px, transparent 48%),
-    radial-gradient(at 15% 85%, rgba(212, 245, 232, 0.65) 0px, transparent 50%);
-  background-attachment: fixed;
+  color: #1c1922;
+  background-color: #f5f4f7;
   font-family:
-    "Hiragino Maru Gothic ProN",
-    "M PLUS Rounded 1c",
-    "Hiragino Sans",
     -apple-system,
     BlinkMacSystemFont,
+    "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN",
     "Segoe UI",
     sans-serif;
   font-size: 14px;
@@ -100,62 +95,40 @@ pre,
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* =========================================================
-   枠線を完全排除し、すりガラス＋クレイ立体感で魅せる
-   ========================================================= */
-
+/* カードコンテナ：枠線は排し、ごく繊細で引き締まったシャドウのみ付与 */
 .bg-white.border,
 .bg-white.border-slate-200,
 .bg-white.border-slate-300,
 .bg-white.rounded-md,
+.bg-white.rounded-2xl,
 .bg-white.rounded-3xl {
   border-color: transparent !important;
-  background-color: rgba(255, 255, 255, 0.76) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 10px 30px -8px rgba(108, 74, 138, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(28, 25, 34, 0.04), 0 4px 14px rgba(28, 25, 34, 0.03);
 }
 
 .bg-slate-50.border {
   border-color: transparent !important;
-  background-color: rgba(244, 239, 248, 0.65);
+  background-color: #f4f2f7;
 }
 
 .border-slate-200,
 .border-slate-100,
 .divide-slate-200 > :not(:last-child) {
-  border-color: rgba(119, 106, 133, 0.09) !important;
+  border-color: rgba(112, 105, 125, 0.11) !important;
 }
 
-/* ぷっくりしたクレイモーフィズム風ボタン */
+/* ボタン：強すぎる角丸（9999px強制）をやめ、端正で押しやすい角丸に統一 */
 button {
-  border-radius: 9999px;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.12s ease;
   cursor: pointer;
 }
 
 button:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: scale(0.985);
 }
 
-/* 主要ボタン（bg-blue-600 / bg-slate-900）にクレイの艶感を付与 */
-button.bg-blue-600 {
-  background: linear-gradient(145deg, #f768a8, #d62f7b) !important;
-  box-shadow:
-    0 6px 16px -4px rgba(214, 47, 123, 0.45),
-    inset 0 2px 3px rgba(255, 255, 255, 0.45);
-}
-
-button.bg-slate-900 {
-  background: linear-gradient(145deg, #42374d, #241c2b) !important;
-  box-shadow:
-    0 6px 16px -4px rgba(36, 28, 43, 0.35),
-    inset 0 2px 3px rgba(255, 255, 255, 0.25);
-}
-
-/* 入力欄：すりガラス面＋ソフトシャドウ */
+/* 入力欄：端正な角丸とマットな面 */
 input[type="text"],
 input[type="url"],
 input[type="email"],
@@ -163,12 +136,11 @@ input[type="date"],
 input[type="datetime-local"],
 select,
 textarea {
-  background-color: rgba(255, 255, 255, 0.68) !important;
+  background-color: #f2f0f5 !important;
   border: 1.5px solid transparent !important;
-  border-radius: 1rem;
-  color: #241c2b;
-  box-shadow: inset 0 2px 5px rgba(108, 74, 138, 0.06);
-  transition: background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border-radius: 0.625rem;
+  color: #1c1922;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 input[type="text"]:focus,
@@ -180,8 +152,8 @@ select:focus,
 textarea:focus {
   outline: none;
   background-color: #ffffff !important;
-  border-color: #eb4791 !important;
-  box-shadow: 0 0 0 4px rgba(235, 71, 145, 0.16);
+  border-color: #b8386a !important;
+  box-shadow: 0 0 0 3px rgba(184, 56, 106, 0.12);
 }
 
 input:disabled {

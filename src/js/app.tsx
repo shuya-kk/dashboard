@@ -63,15 +63,14 @@ const queryClient = new QueryClient({
 const NAV_ITEMS: Array<{
   id: SectionId;
   label: string;
-  clayBg: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { id: 'dashboard', label: 'ホーム', clayBg: 'from-pink-400 to-rose-500', icon: LayoutDashboard },
-  { id: 'articles', label: '記事ノート', clayBg: 'from-violet-400 to-purple-500', icon: FileText },
-  { id: 'notices', label: 'お知らせ', clayBg: 'from-amber-400 to-orange-400', icon: Bell },
-  { id: 'inquiries', label: 'おたより', clayBg: 'from-sky-400 to-blue-500', icon: Inbox },
-  { id: 'applications', label: 'マイアプリ', clayBg: 'from-emerald-400 to-teal-500', icon: AppWindow },
-  { id: 'settings', label: '設定', clayBg: 'from-slate-500 to-slate-700', icon: Settings }
+  { id: 'dashboard', label: 'ホーム', icon: LayoutDashboard },
+  { id: 'articles', label: '記事ノート', icon: FileText },
+  { id: 'notices', label: 'お知らせ', icon: Bell },
+  { id: 'inquiries', label: 'おたより', icon: Inbox },
+  { id: 'applications', label: 'マイアプリ', icon: AppWindow },
+  { id: 'settings', label: '設定', icon: Settings }
 ];
 
 export const AdminDashboardApp: React.FC = () => {
@@ -189,33 +188,28 @@ const AdminShell: React.FC = () => {
         />
       )}
 
-      {/* 左サイドバー（枠線ゼロの浮遊すりガラスパネル） */}
+      {/* 左サイドバー（端正なシルクパネル） */}
       <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-        <div className="p-5 flex items-center justify-between">
+        <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white flex items-center justify-center shadow-md shrink-0">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" />
             </div>
-            <div>
-              <div className="text-sm font-bold text-slate-900 tracking-tight">
-                Atelier
-              </div>
-              <div className="text-[11px] text-slate-500">
-                Creative Studio
-              </div>
-            </div>
+            <span className="text-sm font-bold text-slate-900 tracking-tight">
+              Atelier
+            </span>
           </div>
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 bg-white/80 rounded-full"
+            className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 rounded-lg"
             aria-label="メニューを閉じる"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-2.5 py-1 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = activeSection === item.id;
@@ -227,37 +221,29 @@ const AdminShell: React.FC = () => {
                   setActiveSection(item.id);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-left transition-all ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors ${
                   active
-                    ? 'bg-white text-slate-900 font-bold shadow-sm'
-                    : 'text-slate-600 hover:bg-white/50 hover:text-slate-900 font-medium'
+                    ? 'bg-white text-slate-900 font-semibold shadow-2xs'
+                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 font-medium'
                 }`}
               >
-                <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform ${
-                    active
-                      ? `bg-gradient-to-br ${item.clayBg} text-white scale-105 shadow-sm`
-                      : 'bg-white/70 text-slate-500'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                </div>
+                <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
                 <span className="text-xs">{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        <div className="p-3 m-3 rounded-2xl bg-white/55 space-y-2.5 text-xs">
+        <div className="p-3 m-2.5 rounded-xl bg-white/80 space-y-2 text-xs">
           <div className="flex items-center gap-2">
             {authUser.picture ? (
               <img
                 src={authUser.picture}
                 alt=""
-                className="w-7 h-7 rounded-full shrink-0 shadow-2xs"
+                className="w-6 h-6 rounded-full shrink-0"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 text-white font-bold flex items-center justify-center shrink-0">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-[11px]">
                 {authUser.email.slice(0, 1).toUpperCase()}
               </div>
             )}
@@ -268,7 +254,7 @@ const AdminShell: React.FC = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white/80 hover:bg-white rounded-full shadow-2xs"
+            className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>ログアウト</span>
@@ -283,12 +269,12 @@ const AdminShell: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 -ml-1 text-slate-700 bg-white hover:bg-slate-100 rounded-full shadow-2xs shrink-0"
+              className="md:hidden p-1.5 -ml-1 text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-2xs shrink-0"
               aria-label="メニューを開く"
             >
               <Menu className="w-4 h-4" />
             </button>
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+            <h1 className="text-base font-bold text-slate-900 truncate">
               {NAV_ITEMS.find((n) => n.id === activeSection)?.label}
             </h1>
           </div>
@@ -297,7 +283,7 @@ const AdminShell: React.FC = () => {
             type="button"
             disabled={isReauthenticating}
             onClick={handleReauthenticate}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-100 rounded-full shadow-2xs shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-100 rounded-lg shadow-2xs shrink-0"
             title="OAuthアクセストークンの有効期限を延長します"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isReauthenticating ? 'animate-spin' : ''}`} />
@@ -306,7 +292,7 @@ const AdminShell: React.FC = () => {
         </header>
 
         {tokenExpiredMessage && (
-          <div className="mx-3 sm:mx-6 mt-2 bg-amber-50 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+          <div className="mx-3 sm:mx-6 mt-2 bg-amber-50 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-amber-900 font-medium">
               <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
               <span>{tokenExpiredMessage}</span>
@@ -315,7 +301,7 @@ const AdminShell: React.FC = () => {
               type="button"
               disabled={isReauthenticating}
               onClick={handleReauthenticate}
-              className="px-3.5 py-1 text-xs font-semibold bg-amber-800 text-white rounded-full hover:bg-amber-900"
+              className="px-3 py-1 text-xs font-semibold bg-amber-800 text-white rounded-lg hover:bg-amber-900"
             >
               {isReauthenticating ? '再認証中...' : '再認証する'}
             </button>
@@ -331,8 +317,8 @@ const AdminShell: React.FC = () => {
           {activeSection === 'settings' && <SettingsSection />}
         </main>
 
-        {/* スマホ用下部フローティングボトムナビゲーション */}
-        <nav className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md rounded-2xl grid grid-cols-6 py-1.5 px-1 shadow-lg">
+        {/* スマホ用下部ボトムナビゲーション（文字が見切れない適切な角丸・余白） */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white/95 backdrop-blur-md grid grid-cols-6 py-1.5 px-1 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = activeSection === item.id;
@@ -341,8 +327,8 @@ const AdminShell: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => setActiveSection(item.id)}
-                className={`flex flex-col items-center justify-center py-1 rounded-xl text-[10px] ${
-                  active ? 'text-blue-600 font-bold bg-blue-50' : 'text-slate-500'
+                className={`flex flex-col items-center justify-center py-1 rounded-lg text-[10px] ${
+                  active ? 'text-blue-600 font-bold' : 'text-slate-500'
                 }`}
               >
                 <Icon className="w-4 h-4 mb-0.5" />
@@ -595,10 +581,10 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl max-w-md w-full p-7 space-y-5 shadow-xl">
+      <div className="bg-white rounded-2xl max-w-md w-full p-7 space-y-5 shadow-sm">
         <div className="pb-2 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white flex items-center justify-center shadow-md shrink-0">
-            <Sparkles className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
             <div className="text-base font-bold text-slate-900">

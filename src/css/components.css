@@ -1,29 +1,29 @@
 /*
  * src/css/components.css
- * テーブル、Markdownプレビュー、CodeMirrorのすりガラス＆クレイスタイル。
+ * テーブル、Markdownプレビュー、CodeMirrorの洗練されたコンポーネントスタイル。
  */
 
 table thead tr {
-  background-color: rgba(244, 239, 248, 0.55) !important;
+  background-color: #faf9fb !important;
 }
 
 table th,
 table td {
-  border-color: rgba(119, 106, 133, 0.08) !important;
+  border-color: rgba(112, 105, 125, 0.08) !important;
 }
 
 table tbody tr {
-  transition: background-color 0.15s ease;
+  transition: background-color 0.12s ease;
 }
 
 table tbody tr:hover {
-  background-color: rgba(255, 240, 246, 0.55) !important;
+  background-color: #fdf8fa !important;
 }
 
 /* Markdown プレビュー領域 */
 .markdown-preview-body {
-  color: #241c2b;
-  line-height: 1.85;
+  color: #1c1922;
+  line-height: 1.8;
   font-size: 14.5px;
   word-break: break-word;
 }
@@ -33,22 +33,22 @@ table tbody tr:hover {
   font-weight: 700;
   margin: 1.2rem 0 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 2px solid #ffc2dc;
+  border-bottom: 1.5px solid #f6cadb;
 }
 
 .markdown-preview-body h2 {
-  font-size: 1.28rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 1.1rem 0 0.6rem;
-  padding-left: 0.7rem;
-  border-left: 4px solid #eb4791;
+  padding-left: 0.65rem;
+  border-left: 3px solid #b8386a;
 }
 
 .markdown-preview-body h3 {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
-  color: #42374d;
+  color: #3c3747;
 }
 
 .markdown-preview-body p {
@@ -68,29 +68,29 @@ table tbody tr:hover {
 }
 
 .markdown-preview-body blockquote {
-  border-left: 4px solid #ff94c2;
-  background-color: rgba(255, 240, 246, 0.7);
-  padding: 0.65rem 1rem;
-  border-radius: 0 1rem 1rem 0;
+  border-left: 3px solid #df6c99;
+  background-color: #fdf2f6;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
   margin: 0.85rem 0;
-  color: #42374d;
+  color: #3c3747;
 }
 
 .markdown-preview-body pre {
-  background-color: #241c2b;
-  color: #fdfbfe;
-  padding: 1rem 1.15rem;
-  border-radius: 1.15rem;
+  background-color: #1c1922;
+  color: #faf9fb;
+  padding: 0.95rem 1.1rem;
+  border-radius: 0.75rem;
   overflow-x: auto;
   margin: 0.85rem 0;
   font-size: 13px;
 }
 
 .markdown-preview-body code {
-  background-color: #ffe0ee;
-  color: #b52164;
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.5rem;
+  background-color: #fbe4ed;
+  color: #992a55;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.375rem;
   font-size: 0.9em;
 }
 
@@ -105,30 +105,28 @@ table tbody tr:hover {
   border-collapse: collapse;
   margin: 0.85rem 0;
   font-size: 13.5px;
-  border-radius: 1rem;
-  overflow: hidden;
 }
 
 .markdown-preview-body th,
 .markdown-preview-body td {
-  border: 1px solid #eae2f0;
+  border: 1px solid #e7e4ec;
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
 
 .markdown-preview-body th {
-  background-color: #f4eff8;
+  background-color: #f2f0f5;
   font-weight: 600;
 }
 
 .markdown-preview-body hr {
   border: none;
-  border-top: 2px dashed #ffc2dc;
+  border-top: 1px solid #e7e4ec;
   margin: 1.4rem 0;
 }
 
 .markdown-preview-body a {
-  color: #d62f7b;
+  color: #b8386a;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -136,9 +134,8 @@ table tbody tr:hover {
 .markdown-preview-body img {
   max-width: 100%;
   height: auto;
-  border-radius: 1.15rem;
+  border-radius: 0.75rem;
   margin: 0.6rem 0;
-  box-shadow: 0 6px 18px rgba(36, 28, 43, 0.1);
 }
 
 /* CodeMirror 6 */
@@ -146,17 +143,17 @@ table tbody tr:hover {
   height: 100%;
   min-height: 540px;
   font-size: 13.5px;
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: #ffffff;
 }
 
 .cm-editor-container .cm-gutters {
-  background-color: rgba(244, 239, 248, 0.4) !important;
+  background-color: #faf9fb !important;
   border-right: none !important;
-  color: #9f92ad !important;
+  color: #9992a6 !important;
 }
 
 .cm-editor-container .cm-activeLine {
-  background-color: rgba(255, 224, 238, 0.35) !important;
+  background-color: rgba(251, 228, 237, 0.35) !important;
 }
 
 .cm-editor-container .cm-scroller {
