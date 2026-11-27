@@ -1,63 +1,77 @@
 /*
  * src/css/layout.css
- * ユーザー好みの「左サイドバーレイアウト」を、枠線のない明るく可愛いパステル調で再設計。
- * スマホ時はドロワーメニュー＋下部ボトムナビで崩れを完全に防止します。
+ * 2層浮遊ガラスキャンバス：
+ * 背景のオーロラパステルの上に、左サイドバーもメイン作業エリアも「角丸のすりガラスカード」として浮かびます。
+ * スマホ時はドロワー＋浮遊ガラスボトムドックでレイアウト崩れを防ぎます。
  */
 
 .admin-shell {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  padding: 16px;
+  gap: 16px;
   position: relative;
 }
 
-/* 左サイドバー：明るく優しいパウダーブルー＆クリームのフローティングパネル */
+/* 左サイドバー：枠線のない大きな角丸すりガラスパネル */
 .admin-sidebar {
-  width: 236px;
+  width: 232px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(239, 246, 255, 0.92) 100%);
-  backdrop-filter: blur(14px);
-  color: #222834;
+  height: calc(100vh - 32px);
+  position: sticky;
+  top: 16px;
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  border-radius: 2rem;
+  color: #241c2b;
   display: flex;
   flex-direction: column;
-  box-shadow: 6px 0 28px -10px rgba(59, 120, 231, 0.12);
+  box-shadow:
+    0 16px 40px -12px rgba(108, 74, 138, 0.16),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.95);
   z-index: 40;
 }
 
+/* 右メイン領域：同じくすりガラスキャンバス */
 .admin-main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
+  gap: 14px;
 }
 
 .admin-header {
   min-height: 58px;
-  background-color: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-radius: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;
+  padding: 10px 22px;
   position: sticky;
-  top: 0;
+  top: 16px;
   z-index: 20;
+  box-shadow:
+    0 10px 28px -10px rgba(108, 74, 138, 0.12),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.9);
 }
 
 .admin-content {
   flex: 1;
-  padding: 20px 26px 40px;
-  max-width: 1480px;
   width: 100%;
-  margin: 0 auto;
+  padding-bottom: 24px;
 }
 
 /* 記事エディタの2カラム分割レイアウト */
 .editor-split-pane {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
+  gap: 16px;
   min-height: 580px;
 }
 
@@ -68,18 +82,25 @@
   }
 }
 
-/* スマホ・小型タブレット（768px以下）向けドロワー＆ボトムナビ */
+/* スマホ・小型タブレット（768px以下）向け調整 */
 @media (max-width: 768px) {
+  .admin-shell {
+    padding: 10px 10px 88px;
+    gap: 0;
+  }
+
   .admin-sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    top: 10px;
+    left: 10px;
+    bottom: 10px;
+    height: auto;
     width: 260px;
     max-width: 82vw;
-    border-radius: 0 1.75rem 1.75rem 0;
-    transform: translateX(-105%);
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.92);
+    transform: translateX(-115%);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .admin-sidebar.mobile-open {
@@ -87,11 +108,9 @@
   }
 
   .admin-header {
+    top: 10px;
     padding: 8px 14px;
-  }
-
-  .admin-content {
-    padding: 14px 12px 86px;
+    border-radius: 1.25rem;
   }
 
   .cm-editor-container .cm-editor {

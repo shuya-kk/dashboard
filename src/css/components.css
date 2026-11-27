@@ -1,15 +1,15 @@
 /*
  * src/css/components.css
- * スッキリして温かみのあるテーブル・Markdownプレビュー・CodeMirrorスタイル（枠線・ピンクなし）。
+ * テーブル、Markdownプレビュー、CodeMirrorのすりガラス＆クレイスタイル。
  */
 
 table thead tr {
-  background-color: #f4f7fc !important;
+  background-color: rgba(244, 239, 248, 0.55) !important;
 }
 
 table th,
 table td {
-  border-color: rgba(114, 128, 153, 0.08) !important;
+  border-color: rgba(119, 106, 133, 0.08) !important;
 }
 
 table tbody tr {
@@ -17,12 +17,12 @@ table tbody tr {
 }
 
 table tbody tr:hover {
-  background-color: #f8fbff !important;
+  background-color: rgba(255, 240, 246, 0.55) !important;
 }
 
 /* Markdown プレビュー領域 */
 .markdown-preview-body {
-  color: #222834;
+  color: #241c2b;
   line-height: 1.85;
   font-size: 14.5px;
   word-break: break-word;
@@ -33,7 +33,7 @@ table tbody tr:hover {
   font-weight: 700;
   margin: 1.2rem 0 0.75rem;
   padding-bottom: 0.4rem;
-  border-bottom: 2px solid #dbeafe;
+  border-bottom: 2px solid #ffc2dc;
 }
 
 .markdown-preview-body h2 {
@@ -41,14 +41,14 @@ table tbody tr:hover {
   font-weight: 700;
   margin: 1.1rem 0 0.6rem;
   padding-left: 0.7rem;
-  border-left: 4px solid #4a8df8;
+  border-left: 4px solid #eb4791;
 }
 
 .markdown-preview-body h3 {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 1rem 0 0.5rem;
-  color: #3f495c;
+  color: #42374d;
 }
 
 .markdown-preview-body p {
@@ -68,29 +68,29 @@ table tbody tr:hover {
 }
 
 .markdown-preview-body blockquote {
-  border-left: 4px solid #93c5fd;
-  background-color: #f4f8ff;
+  border-left: 4px solid #ff94c2;
+  background-color: rgba(255, 240, 246, 0.7);
   padding: 0.65rem 1rem;
-  border-radius: 0 0.9rem 0.9rem 0;
+  border-radius: 0 1rem 1rem 0;
   margin: 0.85rem 0;
-  color: #3f495c;
+  color: #42374d;
 }
 
 .markdown-preview-body pre {
-  background-color: #222834;
-  color: #f8f9fc;
+  background-color: #241c2b;
+  color: #fdfbfe;
   padding: 1rem 1.15rem;
-  border-radius: 1rem;
+  border-radius: 1.15rem;
   overflow-x: auto;
   margin: 0.85rem 0;
   font-size: 13px;
 }
 
 .markdown-preview-body code {
-  background-color: #eff6ff;
-  color: #2b62cc;
+  background-color: #ffe0ee;
+  color: #b52164;
   padding: 0.15rem 0.45rem;
-  border-radius: 0.45rem;
+  border-radius: 0.5rem;
   font-size: 0.9em;
 }
 
@@ -105,30 +105,30 @@ table tbody tr:hover {
   border-collapse: collapse;
   margin: 0.85rem 0;
   font-size: 13.5px;
-  border-radius: 0.85rem;
+  border-radius: 1rem;
   overflow: hidden;
 }
 
 .markdown-preview-body th,
 .markdown-preview-body td {
-  border: 1px solid #e6ecf5;
+  border: 1px solid #eae2f0;
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
 
 .markdown-preview-body th {
-  background-color: #f1f5fb;
+  background-color: #f4eff8;
   font-weight: 600;
 }
 
 .markdown-preview-body hr {
   border: none;
-  border-top: 2px dashed #dbeafe;
+  border-top: 2px dashed #ffc2dc;
   margin: 1.4rem 0;
 }
 
 .markdown-preview-body a {
-  color: #3b78e7;
+  color: #d62f7b;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -136,9 +136,9 @@ table tbody tr:hover {
 .markdown-preview-body img {
   max-width: 100%;
   height: auto;
-  border-radius: 1rem;
+  border-radius: 1.15rem;
   margin: 0.6rem 0;
-  box-shadow: 0 4px 12px rgba(34, 40, 52, 0.08);
+  box-shadow: 0 6px 18px rgba(36, 28, 43, 0.1);
 }
 
 /* CodeMirror 6 */
@@ -146,17 +146,17 @@ table tbody tr:hover {
   height: 100%;
   min-height: 540px;
   font-size: 13.5px;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.85);
 }
 
 .cm-editor-container .cm-gutters {
-  background-color: #fafbfd !important;
+  background-color: rgba(244, 239, 248, 0.4) !important;
   border-right: none !important;
-  color: #9aa7bd !important;
+  color: #9f92ad !important;
 }
 
 .cm-editor-container .cm-activeLine {
-  background-color: rgba(219, 234, 254, 0.35) !important;
+  background-color: rgba(255, 224, 238, 0.35) !important;
 }
 
 .cm-editor-container .cm-scroller {

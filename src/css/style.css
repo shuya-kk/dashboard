@@ -2,73 +2,65 @@
 
 /*
  * src/css/style.css
- * ピンク系統を一切使わず、明るく可愛らしい「ひだまりバタークリーム × パウダースカイブルー × ミント」の配色。
- * 枠線（border）によるAIっぽい囲みを排し、ふんわりとした丸みと柔らかな影で構成します。
+ * 革新的デザインコンセプト：「Frost Glass & Soft Clay Studio」
+ * 枠線（border）を完全に排除し、オーロラパステル（ピーチピンク・ラベンダー・スカイ・ミント）のキャンバス上に
+ * すりガラス（backdrop-filter）と、内側に光沢を持つぷっくりしたクレイ（粘土）質感のUIを浮かべます。
  */
 
 @theme {
-  /* 温かみのあるミルキーホワイト〜柔らかいブルーグレー */
-  --color-slate-50: #fafbfd;
-  --color-slate-100: #f1f4f9;
-  --color-slate-200: #e6ecf5;
-  --color-slate-300: #d5dfed;
-  --color-slate-400: #9aa7bd;
-  --color-slate-500: #728099;
-  --color-slate-600: #556178;
-  --color-slate-700: #3f495c;
-  --color-slate-800: #2e3645;
-  --color-slate-900: #222834;
-  --color-slate-950: #181c24;
+  --color-slate-50: #fdfbfe;
+  --color-slate-100: #f4eff8;
+  --color-slate-200: #eae2f0;
+  --color-slate-300: #d8cce3;
+  --color-slate-400: #9f92ad;
+  --color-slate-500: #776a85;
+  --color-slate-600: #594d66;
+  --color-slate-700: #42374d;
+  --color-slate-800: #31273b;
+  --color-slate-900: #241c2b;
+  --color-slate-950: #18121d;
 
-  /* メインアクセント：可愛らしいコーンフラワーブルー / スカイブルー */
-  --color-blue-50: #eff6ff;
-  --color-blue-100: #dbeafe;
-  --color-blue-200: #bfdbfe;
-  --color-blue-300: #93c5fd;
-  --color-blue-400: #60a5fa;
-  --color-blue-500: #4a8df8;
-  --color-blue-600: #3b78e7;
-  --color-blue-700: #2b62cc;
-  --color-blue-800: #234fa6;
-  --color-blue-900: #1e428a;
+  /* メインアクセント：鮮やかなローズベリー×ラベンダーピンク */
+  --color-blue-50: #fff0f6;
+  --color-blue-100: #ffe0ee;
+  --color-blue-200: #ffc2dc;
+  --color-blue-300: #ff94c2;
+  --color-blue-400: #f768a8;
+  --color-blue-500: #eb4791;
+  --color-blue-600: #d62f7b;
+  --color-blue-700: #b52164;
+  --color-blue-800: #941b52;
+  --color-blue-900: #7a1844;
 
-  /* サブカラー：ミントグリーン & ハニーイエロー & ソフトコーラルオレンジ */
-  --color-emerald-50: #ecfdf5;
-  --color-emerald-100: #d1fae5;
-  --color-emerald-300: #6ee7b7;
-  --color-emerald-700: #15805d;
-  --color-emerald-800: #11664a;
-  --color-emerald-900: #0e523b;
+  --color-emerald-50: #edfcf6;
+  --color-emerald-100: #d3f7e8;
+  --color-emerald-300: #7ce3ba;
+  --color-emerald-700: #188259;
+  --color-emerald-800: #136646;
+  --color-emerald-900: #0f5238;
 
-  --color-amber-50: #fffbeb;
-  --color-amber-100: #fef3c7;
-  --color-amber-300: #fcd34d;
-  --color-amber-700: #b45309;
-  --color-amber-800: #92400e;
-  --color-amber-900: #78350f;
+  --color-amber-50: #fff8eb;
+  --color-amber-100: #ffedc7;
+  --color-amber-300: #ffd070;
+  --color-amber-700: #b56800;
+  --color-amber-800: #8f5200;
+  --color-amber-900: #734200;
 
-  --color-red-50: #fff5f2;
-  --color-red-100: #ffe4dc;
-  --color-red-200: #fecbc0;
-  --color-red-300: #fca595;
-  --color-red-600: #e0523c;
-  --color-red-700: #c03d29;
-  --color-red-800: #9c3020;
-  --color-red-900: #7d271a;
+  --color-red-50: #fff1f2;
+  --color-red-100: #ffe0e3;
+  --color-red-200: #fec2c8;
+  --color-red-300: #fd96a1;
+  --color-red-600: #e03e52;
+  --color-red-700: #bd2b3e;
+  --color-red-800: #992232;
+  --color-red-900: #7d1c29;
 
-  /* ぷっくり丸い角丸 */
-  --radius-xs: 0.6rem;
-  --radius-sm: 0.85rem;
-  --radius: 1.1rem;
-  --radius-md: 1.35rem;
-  --radius-lg: 1.65rem;
-  --radius-xl: 2rem;
-}
-
-:root {
-  --bg-canvas: #f8f9fc;
-  --bg-surface: #ffffff;
-  --text-primary: #222834;
+  --radius-xs: 0.7rem;
+  --radius-sm: 0.95rem;
+  --radius: 1.25rem;
+  --radius-md: 1.5rem;
+  --radius-lg: 1.85rem;
+  --radius-xl: 2.25rem;
 }
 
 * {
@@ -79,13 +71,15 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-canvas);
+  color: #241c2b;
+  /* 革新的なオーロラパステルメッシュ背景 */
+  background-color: #f8eff7;
   background-image:
-    radial-gradient(circle at 18% 10%, rgba(219, 234, 254, 0.55) 0%, transparent 42%),
-    radial-gradient(circle at 88% 18%, rgba(254, 243, 199, 0.5) 0%, transparent 40%),
-    radial-gradient(circle at 72% 88%, rgba(209, 250, 229, 0.45) 0%, transparent 42%);
+    radial-gradient(at 8% 12%, rgba(255, 198, 224, 0.72) 0px, transparent 48%),
+    radial-gradient(at 88% 8%, rgba(199, 218, 255, 0.75) 0px, transparent 46%),
+    radial-gradient(at 85% 88%, rgba(255, 223, 194, 0.65) 0px, transparent 48%),
+    radial-gradient(at 15% 85%, rgba(212, 245, 232, 0.65) 0px, transparent 50%);
   background-attachment: fixed;
-  color: var(--text-primary);
   font-family:
     "Hiragino Maru Gothic ProN",
     "M PLUS Rounded 1c",
@@ -106,35 +100,62 @@ pre,
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* 枠線（border）による無機質な囲みをなくし、白い面＋ふんわりした影で立体感を出す */
+/* =========================================================
+   枠線を完全排除し、すりガラス＋クレイ立体感で魅せる
+   ========================================================= */
+
 .bg-white.border,
 .bg-white.border-slate-200,
-.bg-white.border-slate-300 {
+.bg-white.border-slate-300,
+.bg-white.rounded-md,
+.bg-white.rounded-3xl {
   border-color: transparent !important;
-  box-shadow: 0 4px 20px -4px rgba(59, 120, 231, 0.08), 0 1px 4px rgba(34, 40, 52, 0.04);
+  background-color: rgba(255, 255, 255, 0.76) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 10px 30px -8px rgba(108, 74, 138, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
 .bg-slate-50.border {
   border-color: transparent !important;
-  background-color: #f3f6fb;
+  background-color: rgba(244, 239, 248, 0.65);
 }
 
 .border-slate-200,
 .border-slate-100,
 .divide-slate-200 > :not(:last-child) {
-  border-color: rgba(114, 128, 153, 0.1) !important;
+  border-color: rgba(119, 106, 133, 0.09) !important;
 }
 
+/* ぷっくりしたクレイモーフィズム風ボタン */
 button {
   border-radius: 9999px;
-  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease;
   cursor: pointer;
 }
 
 button:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
+/* 主要ボタン（bg-blue-600 / bg-slate-900）にクレイの艶感を付与 */
+button.bg-blue-600 {
+  background: linear-gradient(145deg, #f768a8, #d62f7b) !important;
+  box-shadow:
+    0 6px 16px -4px rgba(214, 47, 123, 0.45),
+    inset 0 2px 3px rgba(255, 255, 255, 0.45);
+}
+
+button.bg-slate-900 {
+  background: linear-gradient(145deg, #42374d, #241c2b) !important;
+  box-shadow:
+    0 6px 16px -4px rgba(36, 28, 43, 0.35),
+    inset 0 2px 3px rgba(255, 255, 255, 0.25);
+}
+
+/* 入力欄：すりガラス面＋ソフトシャドウ */
 input[type="text"],
 input[type="url"],
 input[type="email"],
@@ -142,10 +163,11 @@ input[type="date"],
 input[type="datetime-local"],
 select,
 textarea {
-  background-color: #f1f5fb !important;
+  background-color: rgba(255, 255, 255, 0.68) !important;
   border: 1.5px solid transparent !important;
-  border-radius: 0.95rem;
-  color: #222834;
+  border-radius: 1rem;
+  color: #241c2b;
+  box-shadow: inset 0 2px 5px rgba(108, 74, 138, 0.06);
   transition: background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
@@ -158,11 +180,11 @@ select:focus,
 textarea:focus {
   outline: none;
   background-color: #ffffff !important;
-  border-color: #4a8df8 !important;
-  box-shadow: 0 0 0 3px rgba(74, 141, 248, 0.18);
+  border-color: #eb4791 !important;
+  box-shadow: 0 0 0 4px rgba(235, 71, 145, 0.16);
 }
 
 input:disabled {
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: not-allowed;
 }

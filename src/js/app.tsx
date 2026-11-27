@@ -24,7 +24,7 @@ import {
   X,
   Sliders,
   Menu,
-  CloudSun
+  Sparkles
 } from 'lucide-react';
 import { useAppStore } from './store';
 import {
@@ -63,15 +63,15 @@ const queryClient = new QueryClient({
 const NAV_ITEMS: Array<{
   id: SectionId;
   label: string;
-  badgeColor: string;
+  clayBg: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { id: 'dashboard', label: 'ホーム', badgeColor: 'bg-blue-100 text-blue-600', icon: LayoutDashboard },
-  { id: 'articles', label: '記事ノート', badgeColor: 'bg-indigo-100 text-indigo-600', icon: FileText },
-  { id: 'notices', label: 'お知らせ', badgeColor: 'bg-amber-100 text-amber-600', icon: Bell },
-  { id: 'inquiries', label: 'おたより', badgeColor: 'bg-sky-100 text-sky-600', icon: Inbox },
-  { id: 'applications', label: 'マイアプリ', badgeColor: 'bg-emerald-100 text-emerald-600', icon: AppWindow },
-  { id: 'settings', label: '設定', badgeColor: 'bg-slate-100 text-slate-600', icon: Settings }
+  { id: 'dashboard', label: 'ホーム', clayBg: 'from-pink-400 to-rose-500', icon: LayoutDashboard },
+  { id: 'articles', label: '記事ノート', clayBg: 'from-violet-400 to-purple-500', icon: FileText },
+  { id: 'notices', label: 'お知らせ', clayBg: 'from-amber-400 to-orange-400', icon: Bell },
+  { id: 'inquiries', label: 'おたより', clayBg: 'from-sky-400 to-blue-500', icon: Inbox },
+  { id: 'applications', label: 'マイアプリ', clayBg: 'from-emerald-400 to-teal-500', icon: AppWindow },
+  { id: 'settings', label: '設定', clayBg: 'from-slate-500 to-slate-700', icon: Settings }
 ];
 
 export const AdminDashboardApp: React.FC = () => {
@@ -189,33 +189,33 @@ const AdminShell: React.FC = () => {
         />
       )}
 
-      {/* 左サイドバー（すっきり＆柔らかなパステルブルー基調・枠線なし） */}
+      {/* 左サイドバー（枠線ゼロの浮遊すりガラスパネル） */}
       <aside className={`admin-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-              <CloudSun className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white flex items-center justify-center shadow-md shrink-0">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="text-sm font-bold text-slate-900 tracking-tight">
-                Dev Atelier
+                Atelier
               </div>
               <div className="text-[11px] text-slate-500">
-                個人開発スタジオ
+                Creative Studio
               </div>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 bg-white rounded-full"
+            className="md:hidden p-1.5 text-slate-500 hover:text-slate-900 bg-white/80 rounded-full"
             aria-label="メニューを閉じる"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-1 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-2 space-y-1.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = activeSection === item.id;
@@ -230,12 +230,14 @@ const AdminShell: React.FC = () => {
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-left transition-all ${
                   active
                     ? 'bg-white text-slate-900 font-bold shadow-sm'
-                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 font-medium'
+                    : 'text-slate-600 hover:bg-white/50 hover:text-slate-900 font-medium'
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform ${
-                    active ? 'bg-blue-600 text-white scale-105' : item.badgeColor
+                    active
+                      ? `bg-gradient-to-br ${item.clayBg} text-white scale-105 shadow-sm`
+                      : 'bg-white/70 text-slate-500'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -246,16 +248,16 @@ const AdminShell: React.FC = () => {
           })}
         </nav>
 
-        <div className="p-3.5 m-3 rounded-2xl bg-white/80 space-y-2.5 text-xs">
+        <div className="p-3 m-3 rounded-2xl bg-white/55 space-y-2.5 text-xs">
           <div className="flex items-center gap-2">
             {authUser.picture ? (
               <img
                 src={authUser.picture}
                 alt=""
-                className="w-7 h-7 rounded-full shrink-0"
+                className="w-7 h-7 rounded-full shrink-0 shadow-2xs"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 text-white font-bold flex items-center justify-center shrink-0">
                 {authUser.email.slice(0, 1).toUpperCase()}
               </div>
             )}
@@ -266,7 +268,7 @@ const AdminShell: React.FC = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full"
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white/80 hover:bg-white rounded-full shadow-2xs"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>ログアウト</span>
@@ -593,17 +595,17 @@ const LoginGateway: React.FC<LoginGatewayProps> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full p-7 space-y-5 shadow-md">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl max-w-md w-full p-7 space-y-5 shadow-xl">
         <div className="pb-2 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-            <CloudSun className="w-6 h-6" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 text-white flex items-center justify-center shadow-md shrink-0">
+            <Sparkles className="w-6 h-6" />
           </div>
           <div>
             <div className="text-base font-bold text-slate-900">
-              Dev Atelier
+              Atelier
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              あなた専用の個人開発スタジオ
+              あなた専用のクリエイティブスタジオ
             </p>
           </div>
         </div>
